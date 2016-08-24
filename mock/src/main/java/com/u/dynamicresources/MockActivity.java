@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.u.dynamic_resources.ScreenDensity;
+import com.u.dynamic_resources.screen.ScreenDensity;
 
 /**
  * Created by saguilera on 8/24/16.

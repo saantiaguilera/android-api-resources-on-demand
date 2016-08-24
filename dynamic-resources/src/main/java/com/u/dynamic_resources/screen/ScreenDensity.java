@@ -1,4 +1,4 @@
-package com.u.dynamic_resources;
+package com.u.dynamic_resources.screen;
 
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
