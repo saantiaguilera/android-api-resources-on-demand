@@ -12,8 +12,8 @@ public enum ScreenDensity {
     MDPI(ScreenDensity.DENSITY_M),
     HDPI(ScreenDensity.DENSITY_H),
     XHDPI(ScreenDensity.DENSITY_XH),
-    XXHPI(ScreenDensity.DENSITY_XXH),
-    XXXHPI(ScreenDensity.DENSITY_XXXH),
+    XXHDPI(ScreenDensity.DENSITY_XXH),
+    XXXHDPI(ScreenDensity.DENSITY_XXXH),
     TV(ScreenDensity.DENSITY_TV);
 
     private final static int DENSITY_L = DisplayMetrics.DENSITY_LOW;
@@ -35,7 +35,15 @@ public enum ScreenDensity {
     }
 
     public static ScreenDensity get(Resources resources) {
-        return valueOf(String.valueOf(resources.getDisplayMetrics().density));
+        int densityDpi = resources.getDisplayMetrics().densityDpi;
+
+        for (ScreenDensity density : ScreenDensity.values()) {
+            if (density.getDensity() == densityDpi) {
+                return density;
+            }
+        }
+
+        return MDPI;
     }
 
 }
