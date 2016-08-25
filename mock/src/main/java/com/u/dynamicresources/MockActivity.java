@@ -29,7 +29,7 @@ public class MockActivity extends Activity {
         Log.w(this.getClass().getSimpleName(), "screen density : " + ScreenDensity.get(this.getResources()).toString());
 
         Pomu.create(this)
-                .parse(IMAGEN_AUTO)
+                .parse(IMAGEN_ESTUFA)
                 .callback(new BitmapCallback() {
                     @Override
                     public void onSuccess() {

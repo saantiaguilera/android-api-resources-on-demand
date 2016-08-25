@@ -34,7 +34,15 @@ final class Streamer {
     private @NonNull WeakReference<Context> context;
 
     private @NonNull OkHttpClient client;
-    private @Nullable WeakReference<FileCallback> callback;
+
+    /**
+     * Not weak reference because probably the user will just execute and dont retain the instance
+     * in a reference. Since we are working with bitmaps, theres a really nice chance the callback
+     * gets gc'ed.
+     *
+     * It wont leak because we are the ones using it only :)
+     */
+    private @Nullable FileCallback callback;
     private @NonNull Uri uri;
     private @NonNull File output;
 
@@ -57,12 +65,7 @@ final class Streamer {
             this.client = new OkHttpClient.Builder().build();
         }
 
-        if (callback != null) {
-            this.callback = new WeakReference<>(callback);
-        } else {
-            this.callback = null;
-        }
-
+        this.callback = callback;
         this.uri = uri;
         this.output = Files.create(context, uri);
     }
@@ -82,7 +85,7 @@ final class Streamer {
             @Override
             public void onFailure(Call call, IOException e) {
                 if (!call.isCanceled() && callback != null) {
-                    callback.get().onFailure(e);
+                    callback.onFailure(e);
                 }
             }
 
@@ -118,6 +121,8 @@ final class Streamer {
             while ((bytesRead = is.read(buffer, 0, buffer.length)) >= 0) {
                 fos.write(buffer, 0, bytesRead);
             }
+
+            fos.flush();
         } catch (IOException e) {
             handler.postAtFrontOfQueue(new FailureRunnable(e));
         } finally {
@@ -142,7 +147,7 @@ final class Streamer {
         private WeakReference<Context> context = null;
 
         private OkHttpClient client = null;
-        private WeakReference<FileCallback> callback = null;
+        private FileCallback callback = null;
         private Uri uri = null;
 
         Builder(@NonNull Context context) {
@@ -155,7 +160,7 @@ final class Streamer {
         }
 
         public Builder callback(@NonNull FileCallback callback) {
-            this.callback = new WeakReference<>(callback);
+            this.callback = callback;
             return this;
         }
 
@@ -164,7 +169,7 @@ final class Streamer {
 
             Streamer streamer = new Streamer(context.get(),
                     client,
-                    callback == null ? null : callback.get(),
+                    callback == null ? null : callback,
                     uri);
             streamer.fetch();
             return streamer;
@@ -182,7 +187,7 @@ final class Streamer {
         @Override
         public void run() {
             if (callback != null) {
-                callback.get().onFailure(exception);
+                callback.onFailure(exception);
             }
         }
     }
@@ -191,7 +196,7 @@ final class Streamer {
         @Override
         public void run() {
             if (callback != null) {
-                callback.get().onSuccess(output);
+                callback.onSuccess(output);
             }
         }
     }
