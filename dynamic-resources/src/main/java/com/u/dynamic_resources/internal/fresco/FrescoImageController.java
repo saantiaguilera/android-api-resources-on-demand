@@ -1,4 +1,4 @@
-package com.u.dynamic_resources.internal.facebook;
+package com.u.dynamic_resources.internal.fresco;
 
 import android.content.ContentResolver;
 import android.content.Context;

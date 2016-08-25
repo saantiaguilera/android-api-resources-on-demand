@@ -1,12 +1,19 @@
 package com.u.dynamic_resources.core;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.widget.ImageView;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.view.DraweeView;
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.u.dynamic_resources.internal.Pipeline;
 import com.u.dynamic_resources.internal.Request;
+import com.u.dynamic_resources.internal.fresco.FrescoImageController;
 import com.u.dynamic_resources.internal.loading.BitmapCallback;
 import com.u.dynamic_resources.internal.loading.FileCallback;
 import com.u.dynamic_resources.screen.ScreenDensity;
@@ -41,6 +48,8 @@ public final class Pomu {
         private WeakReference<Context> context;
 
         private Uri uri;
+        private WeakReference<BitmapCallback> callback;
+        private FrescoImageController.Builder controller;
 
         public Builder(Context context) {
             this.context = new WeakReference<>(context);
@@ -91,18 +100,66 @@ public final class Pomu {
             return this;
         }
 
-        public void get(final BitmapCallback listener) {
+        public Builder callback(BitmapCallback callback) {
+            this.callback = new WeakReference<>(callback);
+            return this;
+        }
+
+        public Builder controller(FrescoImageController.Builder controller) {
+            this.controller = controller;
+            return this;
+        }
+
+        public void into(final ImageView view) {
             Request request = new Request.Builder(context.get())
                     .uri(uri)
                     .callback(new FileCallback() {
                         @Override
                         public void onFailure(Exception e) {
-                            listener.onFailure(e);
+                            if (callback != null) {
+                                callback.get().onFailure(e);
+                            }
                         }
 
                         @Override
                         public void onSuccess(File file) {
-                            //Todo file -> bitmap and listener.success()
+                            if (view instanceof SimpleDraweeView) {
+                                //If fresco is available, take advantage of it
+                                FrescoImageController.Builder builder = controller;
+
+                                if (builder == null) {
+                                    builder = FrescoImageController.create(context.get());
+                                }
+
+                                builder.load(file)
+                                        .listener(new FrescoImageController.Callback() {
+                                            //This is why I hate not using eventbus and getting callback hells :)
+                                            @Override
+                                            public void onSuccess() {
+                                                if (callback != null) {
+                                                    callback.get().onSuccess();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onFailure(@NonNull Throwable t) {
+                                                if (callback != null) {
+                                                    callback.get().onFailure(t);
+                                                }
+                                            }
+                                        }).into((DraweeView) view);
+                            } else {
+                                //If its not, decode normally and set it (in Dalvik systems be careful with this)
+                                BitmapFactory.Options options = new BitmapFactory.Options();
+                                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                                Bitmap bitmap = BitmapFactory.decodeFile(file.getPath(), options);
+
+                                view.setImageBitmap(bitmap);
+
+                                if (callback != null) {
+                                    callback.get().onSuccess();
+                                }
+                            }
                         }
                     }).build();
 
