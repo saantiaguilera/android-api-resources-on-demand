@@ -154,9 +154,8 @@ public final class Pomu {
                                 //If its not, decode normally and set it (in Dalvik systems be careful with this)
                                 BitmapFactory.Options options = new BitmapFactory.Options();
                                 options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                                Bitmap bitmap = BitmapFactory.decodeFile(file.getPath(), options);
 
-                                view.setImageBitmap(bitmap);
+                                view.setImageBitmap(BitmapFactory.decodeFile(file.getPath(), options));
 
                                 if (callback != null) {
                                     callback.get().onSuccess();
