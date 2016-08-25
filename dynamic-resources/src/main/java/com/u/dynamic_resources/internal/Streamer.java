@@ -19,6 +19,7 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -77,8 +78,14 @@ final class Streamer {
             return;
         }
 
+        CacheControl cacheControl = new CacheControl.Builder()
+                .noCache()
+                .noStore()
+                .build();
+
         Request request = new Request.Builder()
                 .url(uri.toString())
+                .cacheControl(cacheControl)
                 .get().build();
 
         client.newCall(request).enqueue(new okhttp3.Callback() {
