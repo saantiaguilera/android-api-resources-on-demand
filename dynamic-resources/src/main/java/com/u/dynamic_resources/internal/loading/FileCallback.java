@@ -1,5 +1,7 @@
 package com.u.dynamic_resources.internal.loading;
 
+import android.support.annotation.NonNull;
+
 import java.io.File;
 
 /**
@@ -7,8 +9,8 @@ import java.io.File;
  */
 public interface FileCallback {
 
-    void onFailure(Exception e);
+    void onFailure(@NonNull Exception e);
 
-    void onSuccess(File file);
+    void onSuccess(@NonNull File file);
 
 }

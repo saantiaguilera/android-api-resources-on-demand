@@ -52,7 +52,7 @@ public final class Pomu {
         private @Nullable WeakReference<BitmapCallback> callback;
         private @Nullable FrescoImageController.Builder controller;
 
-        public Builder(@NonNull Context context) {
+        Builder(@NonNull Context context) {
             this.context = new WeakReference<>(context);
         }
 
@@ -118,14 +118,14 @@ public final class Pomu {
                     .uri(uri)
                     .callback(new FileCallback() {
                         @Override
-                        public void onFailure(Exception e) {
+                        public void onFailure(@NonNull Exception e) {
                             if (callback != null) {
                                 callback.get().onFailure(e);
                             }
                         }
 
                         @Override
-                        public void onSuccess(File file) {
+                        public void onSuccess(@NonNull File file) {
                             if (view instanceof SimpleDraweeView) {
                                 //If fresco is available, take advantage of it
                                 FrescoImageController.Builder builder = controller;
