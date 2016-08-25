@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
-import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.view.DraweeView;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.u.dynamic_resources.internal.Pipeline;
@@ -30,11 +29,11 @@ public final class Pomu {
 
     private static ScreenDensity dpi = null;
 
-    public static void init(@NonNull Context context) {
-        init(context, null);
+    public static void initialize(@NonNull Context context) {
+        initialize(context, null);
     }
 
-    public static void init(@NonNull Context context, @Nullable Configurations configurations) {
+    public static void initialize(@NonNull Context context, @Nullable Configurations configurations) {
         dpi = ScreenDensity.get(context.getResources());
     }
 
@@ -134,7 +133,7 @@ public final class Pomu {
                                     builder = FrescoImageController.create(context.get());
                                 }
 
-                                builder.load(file)
+                                builder.load("file:/" + file.getPath()) //Its the same to do this or use the schema: "file://" + file.getPath()
                                         .listener(new FrescoImageController.Callback() {
                                             //This is why I hate not using eventbus and getting callback hells :)
                                             @Override

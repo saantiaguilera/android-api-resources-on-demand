@@ -17,7 +17,7 @@ final class Files {
 
     private static final int STRING_RADIX_REPRESENTATION = 16;
 
-    private static final String DEFAULT_EXTENSION = "jpg";
+    private static final String DEFAULT_EXTENSION = ".jpg";
 
     private static String hash(String name) {
         try {
@@ -40,7 +40,7 @@ final class Files {
     }
 
     public static File create(Context context, Uri uri) {
-        String url = hash(uri.toString()) + "." + stripExtension(uri.toString());
+        String url = hash(uri.toString()) + stripExtension(uri.toString());
         return new File(context.getFilesDir(), url);
     }
 
