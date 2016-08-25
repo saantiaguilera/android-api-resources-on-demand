@@ -13,6 +13,7 @@ import com.facebook.drawee.view.DraweeView;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.u.dynamic_resources.internal.Pipeline;
 import com.u.dynamic_resources.internal.Request;
+import com.u.dynamic_resources.internal.Validator;
 import com.u.dynamic_resources.internal.fresco.FrescoImageController;
 import com.u.dynamic_resources.internal.loading.BitmapCallback;
 import com.u.dynamic_resources.internal.loading.FileCallback;
@@ -37,7 +38,7 @@ public final class Pomu {
         dpi = ScreenDensity.get(context.getResources());
     }
 
-    public static Builder create(@NonNull Context context) {
+    public static @NonNull Builder create(@NonNull Context context) {
         if (dpi == null) throw new NullPointerException("No screen dpi available. Maybe you forgot to initialize Pomu??");
 
         return new Builder(context);
@@ -45,22 +46,22 @@ public final class Pomu {
 
     public static class Builder {
 
-        private WeakReference<Context> context;
+        private @NonNull WeakReference<Context> context;
 
-        private Uri uri;
-        private WeakReference<BitmapCallback> callback;
-        private FrescoImageController.Builder controller;
+        private @NonNull Uri uri;
+        private @Nullable WeakReference<BitmapCallback> callback;
+        private @Nullable FrescoImageController.Builder controller;
 
-        public Builder(Context context) {
+        public Builder(@NonNull Context context) {
             this.context = new WeakReference<>(context);
         }
 
-        public Builder parse(String url) {
+        public Builder parse(@NonNull String url) {
             uri = Uri.parse(url);
             return this;
         }
 
-        public Builder parse(Uri uri) {
+        public Builder parse(@NonNull Uri uri) {
             this.uri = uri;
             return this;
         }
@@ -95,22 +96,24 @@ public final class Pomu {
          * @param formatter
          * @return
          */
-        public Builder parse(String url, UrlDensityFormatter formatter) {
+        public Builder parse(@NonNull String url, @NonNull UrlDensityFormatter formatter) {
             this.uri = Uri.parse(String.format(url, formatter.from(dpi)));
             return this;
         }
 
-        public Builder callback(BitmapCallback callback) {
+        public Builder callback(@NonNull BitmapCallback callback) {
             this.callback = new WeakReference<>(callback);
             return this;
         }
 
-        public Builder controller(FrescoImageController.Builder controller) {
+        public Builder controller(@NonNull FrescoImageController.Builder controller) {
             this.controller = controller;
             return this;
         }
 
-        public void into(final ImageView view) {
+        public void into(@NonNull final ImageView view) {
+            Validator.checkNull(this, uri);
+
             Request request = new Request.Builder(context.get())
                     .uri(uri)
                     .callback(new FileCallback() {
