@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 /**
  * Created by saguilera on 8/24/16.
  */
-public interface LoadingCallback {
+public interface BitmapCallback {
 
     void onSuccess(Bitmap bitmap);
 

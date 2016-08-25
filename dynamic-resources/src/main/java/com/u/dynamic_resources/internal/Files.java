@@ -11,7 +11,7 @@ import java.security.MessageDigest;
 /**
  * Created by saguilera on 8/25/16.
  */
-class Files {
+final class Files {
 
     private static final String HASH = "MD5";
 

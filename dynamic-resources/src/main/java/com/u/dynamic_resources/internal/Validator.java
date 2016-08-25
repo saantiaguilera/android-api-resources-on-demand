@@ -3,7 +3,7 @@ package com.u.dynamic_resources.internal;
 /**
  * Created by saguilera on 8/25/16.
  */
-class Validator {
+final class Validator {
 
     public static void checkNull(Object context, Object... args) {
         for (Object object : args) {

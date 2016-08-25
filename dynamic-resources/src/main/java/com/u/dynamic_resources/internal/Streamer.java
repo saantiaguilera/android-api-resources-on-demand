@@ -9,6 +9,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 
+import com.u.dynamic_resources.internal.loading.FileCallback;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,14 +27,14 @@ import okhttp3.Response;
 /**
  * Created by saguilera on 8/25/16.
  */
-class Streamer {
+final class Streamer {
 
     private static final int BUFFER_SIZE = 1024;
 
     private @NonNull WeakReference<Context> context;
 
     private @NonNull OkHttpClient client;
-    private @Nullable WeakReference<Callback> callback;
+    private @Nullable WeakReference<FileCallback> callback;
     private @NonNull Uri uri;
     private @NonNull File output;
 
@@ -45,7 +47,7 @@ class Streamer {
 
     private Streamer(@NonNull Context context,
                      @Nullable OkHttpClient client,
-                     @Nullable Callback callback,
+                     @Nullable FileCallback callback,
                      @NonNull Uri uri) {
         this.context = new WeakReference<>(context);
 
@@ -140,7 +142,7 @@ class Streamer {
         private WeakReference<Context> context = null;
 
         private OkHttpClient client = null;
-        private WeakReference<Callback> callback = null;
+        private WeakReference<FileCallback> callback = null;
         private Uri uri = null;
 
         Builder(@NonNull Context context) {
@@ -152,7 +154,7 @@ class Streamer {
             return this;
         }
 
-        public Builder callback(@NonNull Callback callback) {
+        public Builder callback(@NonNull FileCallback callback) {
             this.callback = new WeakReference<>(callback);
             return this;
         }
@@ -161,7 +163,9 @@ class Streamer {
             Validator.checkNull(this, context, uri);
 
             Streamer streamer = new Streamer(context.get(),
-                    client, callback.get(), uri);
+                    client,
+                    callback == null ? null : callback.get(),
+                    uri);
             streamer.fetch();
             return streamer;
         }
@@ -190,11 +194,6 @@ class Streamer {
                 callback.get().onSuccess(output);
             }
         }
-    }
-
-    interface Callback {
-        void onFailure(Exception e);
-        void onSuccess(File file);
     }
 
 }

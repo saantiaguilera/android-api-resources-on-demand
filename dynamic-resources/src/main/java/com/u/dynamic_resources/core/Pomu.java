@@ -2,10 +2,18 @@ package com.u.dynamic_resources.core;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import com.u.dynamic_resources.internal.loading.LoadingCallback;
+import com.u.dynamic_resources.internal.Pipeline;
+import com.u.dynamic_resources.internal.Request;
+import com.u.dynamic_resources.internal.loading.BitmapCallback;
+import com.u.dynamic_resources.internal.loading.FileCallback;
 import com.u.dynamic_resources.screen.ScreenDensity;
 import com.u.dynamic_resources.screen.UrlDensityFormatter;
+
+import java.io.File;
+import java.lang.ref.WeakReference;
 
 /**
  * Created by saguilera on 8/24/16.
@@ -14,25 +22,29 @@ public final class Pomu {
 
     private static ScreenDensity dpi = null;
 
-    public static void init(Context context) {
+    public static void init(@NonNull Context context) {
         init(context, null);
     }
 
-    public static void init(Context context, Configurations configurations) {
+    public static void init(@NonNull Context context, @Nullable Configurations configurations) {
         dpi = ScreenDensity.get(context.getResources());
     }
 
-    public static Builder create() {
+    public static Builder create(@NonNull Context context) {
         if (dpi == null) throw new NullPointerException("No screen dpi available. Maybe you forgot to initialize Pomu??");
 
-        return new Builder();
+        return new Builder(context);
     }
 
     public static class Builder {
 
+        private WeakReference<Context> context;
+
         private Uri uri;
 
-        public Builder() {}
+        public Builder(Context context) {
+            this.context = new WeakReference<>(context);
+        }
 
         public Builder parse(String url) {
             uri = Uri.parse(url);
@@ -79,9 +91,22 @@ public final class Pomu {
             return this;
         }
 
-        public Builder get(LoadingCallback listener) {
+        public void get(final BitmapCallback listener) {
+            Request request = new Request.Builder(context.get())
+                    .uri(uri)
+                    .callback(new FileCallback() {
+                        @Override
+                        public void onFailure(Exception e) {
+                            listener.onFailure(e);
+                        }
 
-            return this;
+                        @Override
+                        public void onSuccess(File file) {
+                            //Todo file -> bitmap and listener.success()
+                        }
+                    }).build();
+
+            Pipeline.getInstance().fetch(request);
         }
     }
 
