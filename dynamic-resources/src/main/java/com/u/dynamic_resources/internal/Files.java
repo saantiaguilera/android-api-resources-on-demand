@@ -2,7 +2,6 @@ package com.u.dynamic_resources.internal;
 
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.WorkerThread;
 
 import java.io.File;
 import java.math.BigInteger;

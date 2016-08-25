@@ -1,9 +1,6 @@
 package com.u.dynamic_resources.internal;
 
-import com.u.dynamic_resources.core.Configurations;
 import com.u.dynamic_resources.core.Pomu;
-
-import okhttp3.OkHttpClient;
 
 /**
  * Created by saguilera on 8/25/16.
