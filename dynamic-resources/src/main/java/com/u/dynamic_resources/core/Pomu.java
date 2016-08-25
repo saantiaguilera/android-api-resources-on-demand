@@ -3,6 +3,7 @@ package com.u.dynamic_resources.core;
 import android.content.Context;
 import android.net.Uri;
 
+import com.u.dynamic_resources.internal.loading.LoadingCallback;
 import com.u.dynamic_resources.screen.ScreenDensity;
 import com.u.dynamic_resources.screen.UrlDensityFormatter;
 
@@ -78,6 +79,10 @@ public final class Pomu {
             return this;
         }
 
+        public Builder get(LoadingCallback listener) {
+
+            return this;
+        }
     }
 
 }
