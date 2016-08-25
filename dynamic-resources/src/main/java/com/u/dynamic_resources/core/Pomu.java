@@ -133,7 +133,7 @@ public final class Pomu {
                                     builder = FrescoImageController.create(context.get());
                                 }
 
-                                builder.load("file:/" + file.getPath()) //Its the same to do this or use the schema: "file://" + file.getPath()
+                                builder.load(file.toURI().toString()) //Its the same to do this or use the schema: "file://" + file.getPath()
                                         .listener(new FrescoImageController.Callback() {
                                             //This is why I hate not using eventbus and getting callback hells :)
                                             @Override
