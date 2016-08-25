@@ -28,13 +28,19 @@ import java.lang.ref.WeakReference;
 public final class Pomu {
 
     private static ScreenDensity dpi = null;
+    private static Configurations configurations = null;
 
     public static void initialize(@NonNull Context context) {
         initialize(context, null);
     }
 
-    public static void initialize(@NonNull Context context, @Nullable Configurations configurations) {
+    public static void initialize(@NonNull Context context, @Nullable Configurations configs) {
         dpi = ScreenDensity.get(context.getResources());
+        configurations = configs;
+    }
+
+    public static @Nullable Configurations getConfigurations() {
+        return configurations;
     }
 
     public static @NonNull Builder create(@NonNull Context context) {

@@ -1,6 +1,7 @@
 package com.u.dynamic_resources.internal;
 
 import com.u.dynamic_resources.core.Configurations;
+import com.u.dynamic_resources.core.Pomu;
 
 import okhttp3.OkHttpClient;
 
@@ -10,8 +11,6 @@ import okhttp3.OkHttpClient;
 public class Pipeline {
 
     private static Pipeline instance;
-
-    private OkHttpClient client;
 
     public static Pipeline getInstance() {
         if (instance == null) {
@@ -27,13 +26,13 @@ public class Pipeline {
 
     private Pipeline() {}
 
-    public void apply(Configurations configurations) {
-        //TODO
-    }
-
+    @SuppressWarnings("ConstantConditions")
     public void fetch(Request request) {
         Streamer.Builder builder = Streamer.with(request.getContext());
-                //.client(configurations.getClient())
+
+        if (Pomu.getConfigurations() != null && Pomu.getConfigurations().getClient() != null) {
+            builder.client(Pomu.getConfigurations().getClient());
+        }
 
         if (request.getCallback() != null) {
             builder.callback(request.getCallback());
