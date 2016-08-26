@@ -8,19 +8,21 @@ What it does is, when your application is in need of a resource, it will at that
 
 ### Usage:
 
-In your Application, initialize Pomu. If your application targets API levels lower than 19, where Dalvik is the VM, its highly recommended to use Fresco for image loading.
+If your application targets API levels lower than 19, where Dalvik is the VM, its highly recommended to use Fresco for image loading.
 
 ```Java
    //In your applications onCreate()
    Fresco.initialize(this);
-   Pomu.initialize(this); // You can also provide a set of configurations to customize the network client and stuff :)
+   
+	//If you plan on using custom configurations (like custom cache / network client)
+	Pipeline.getInstance().setConfigurations(configurations);
 ```
 
 For loading a resource just:
 
 ```Java
     Pomu.create(context)
-        .parse(urlToLoad)
+        .url(urlToLoad)
         .callback(ifYouWantCallbacks)
         .into(yourImageView);
 ```
@@ -67,7 +69,7 @@ You can give to Pomu a UrlDensityFormatter and have it do this for you instead o
 
     Pomu.create(context)
        ....
-       .parse("http://mylovelyhost.com/image-of-id-234234-in-density-%s", formatter)
+       .url("http://mylovelyhost.com/image-of-id-234234-in-density-%s", formatter)
        ....
 ```       
 
@@ -78,4 +80,3 @@ You can give to Pomu a UrlDensityFormatter and have it do this for you instead o
 - [x] Screen density images format support
 - [ ] Custom cache 
 - [ ] Wrap the resources inside a inner dir (I forgot) #TODO
-- [ ] Change some awful method names (like parse()) #TODO

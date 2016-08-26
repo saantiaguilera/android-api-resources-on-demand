@@ -172,7 +172,7 @@ final class Streamer {
         }
 
         public Streamer fetch(@NonNull Uri uri) {
-            Validator.checkNull(this, context, uri);
+            Validator.checkNullAndThrow(this, context, uri);
 
             Streamer streamer = new Streamer(context.get(),
                     client,

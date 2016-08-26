@@ -5,12 +5,22 @@ package com.u.dynamic_resources.internal;
  */
 public final class Validator {
 
-    public static void checkNull(Object context, Object... args) {
+    public static void checkNullAndThrow(Object context, Object... args) {
         for (Object object : args) {
             if (object == null) {
                 throw new NullPointerException("Null object in " + context.getClass().getSimpleName());
             }
         }
+    }
+
+    public static boolean checkNull(Object... args) {
+        for (Object object : args) {
+            if (object == null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

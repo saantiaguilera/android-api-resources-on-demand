@@ -68,7 +68,7 @@ public class Request {
         }
 
         public Request build() {
-            Validator.checkNull(this, context, uri);
+            Validator.checkNullAndThrow(this, context, uri);
 
             return new Request(context.get(), callback.get(), uri);
         }

@@ -28,20 +28,6 @@ import java.lang.ref.WeakReference;
 public final class Pomu {
 
     private static ScreenDensity dpi = null;
-    private static Configurations configurations = null;
-
-    public static void initialize(@NonNull Context context) {
-        initialize(context, null);
-    }
-
-    public static void initialize(@NonNull Context context, @Nullable Configurations configs) {
-        dpi = ScreenDensity.get(context.getResources());
-        configurations = configs;
-    }
-
-    public static @Nullable Configurations getConfigurations() {
-        return configurations;
-    }
 
     public static @NonNull Builder create(@NonNull Context context) {
         if (dpi == null) throw new NullPointerException("No screen dpi available. Maybe you forgot to initialize Pomu??");
@@ -61,12 +47,12 @@ public final class Pomu {
             this.context = new WeakReference<>(context);
         }
 
-        public Builder parse(@NonNull String url) {
+        public Builder url(@NonNull String url) {
             uri = Uri.parse(url);
             return this;
         }
 
-        public Builder parse(@NonNull Uri uri) {
+        public Builder url(@NonNull Uri uri) {
             this.uri = uri;
             return this;
         }
@@ -101,7 +87,7 @@ public final class Pomu {
          * @param formatter
          * @return
          */
-        public Builder parse(@NonNull String url, @NonNull UrlDensityFormatter formatter) {
+        public Builder url(@NonNull String url, @NonNull UrlDensityFormatter formatter) {
             this.uri = Uri.parse(String.format(url, formatter.from(dpi)));
             return this;
         }
@@ -117,7 +103,7 @@ public final class Pomu {
         }
 
         public void into(@NonNull final ImageView view) {
-            Validator.checkNull(this, uri);
+            Validator.checkNullAndThrow(this, uri);
 
             Request request = new Request.Builder(context.get())
                     .uri(uri)

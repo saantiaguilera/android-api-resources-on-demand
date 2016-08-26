@@ -1,6 +1,9 @@
 package com.u.dynamic_resources.internal;
 
-import com.u.dynamic_resources.core.Pomu;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.u.dynamic_resources.core.Configurations;
 
 /**
  * Created by saguilera on 8/25/16.
@@ -9,7 +12,9 @@ public class Pipeline {
 
     private static Pipeline instance;
 
-    public static Pipeline getInstance() {
+    private @Nullable Configurations configurations = null;
+
+    public static @NonNull Pipeline getInstance() {
         if (instance == null) {
             synchronized (Pipeline.class) {
                 if (instance == null) {
@@ -23,12 +28,16 @@ public class Pipeline {
 
     private Pipeline() {}
 
+    public void setConfigurations(@Nullable Configurations configurations) {
+        this.configurations = configurations;
+    }
+
     @SuppressWarnings("ConstantConditions")
-    public void fetch(Request request) {
+    public void fetch(@NonNull Request request) {
         Streamer.Builder builder = Streamer.with(request.getContext());
 
-        if (Pomu.getConfigurations() != null && Pomu.getConfigurations().getClient() != null) {
-            builder.client(Pomu.getConfigurations().getClient());
+        if (!Validator.checkNull(configurations, configurations.getClient())) {
+            builder.client(configurations.getClient());
         }
 
         if (request.getCallback() != null) {

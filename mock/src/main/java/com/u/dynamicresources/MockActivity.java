@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.facebook.drawee.view.SimpleDraweeView;
 import com.u.dynamic_resources.core.Pomu;
 import com.u.dynamic_resources.internal.fresco.FrescoImageController;
 import com.u.dynamic_resources.internal.loading.BitmapCallback;
@@ -67,13 +66,13 @@ public class MockActivity extends Activity {
 
         //Static image with fresco without custom controller
         Pomu.create(this)
-                .parse(IMAGEN_ESTUFA)
+                .url(IMAGEN_ESTUFA)
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_1));
 
         //Static image with fresco with custom controller
         Pomu.create(this)
-                .parse(IMAGEN_ESTUFA)
+                .url(IMAGEN_ESTUFA)
                 .callback(bitmapCallback)
                 .controller(FrescoImageController.create(this)
                         .autoRotate(true)
@@ -83,21 +82,21 @@ public class MockActivity extends Activity {
 
         //Dynamic image with fresco without custom controller
         Pomu.create(this)
-                .parse(IMAGEN_CHIMENEA_FORMATTED, urlFormatter)
+                .url(IMAGEN_CHIMENEA_FORMATTED, urlFormatter)
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_3));
 
 
         //Static image with imageview
         Pomu.create(this)
-                .parse(IMAGEN_ESTUFA)
+                .url(IMAGEN_ESTUFA)
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_4));
 
 
         //Dynamic image with imageview
         Pomu.create(this)
-                .parse(IMAGEN_CHIMENEA_FORMATTED, urlFormatter)
+                .url(IMAGEN_CHIMENEA_FORMATTED, urlFormatter)
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_5));
     }
