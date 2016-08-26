@@ -18,21 +18,21 @@ import java.util.List;
  */
 class LruCounter {
 
-    private static final int DISK_SIZE = 1024 * 1024 * 15; // 15MB
-
     private static final String SHARED_PREFERENCES_DIR = LruCounter.class.getName() + "dynamic-resources";
 
     private WeakReference<Context> context;
 
     private List<Container> files;
-    private int size;
+    private long size;
+    private long maxSize;
 
     private DiskCache cache;
     private SharedPreferences sharedPreferences;
 
-    public LruCounter(DiskCache cache) {
+    public LruCounter(DiskCache cache, long maxDiskSize) {
         this.context = new WeakReference<>(cache.getContext());
         this.cache = cache;
+        this.maxSize = maxDiskSize;
         sharedPreferences = getContext().getSharedPreferences(SHARED_PREFERENCES_DIR, Context.MODE_PRIVATE);
 
         size = 0;
@@ -57,7 +57,7 @@ class LruCounter {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         boolean changed = false;
 
-        while (size > DISK_SIZE && !files.isEmpty()) {
+        while (size > maxSize && !files.isEmpty()) {
             Container container = files.get(0);
 
             size -= container.getSize();

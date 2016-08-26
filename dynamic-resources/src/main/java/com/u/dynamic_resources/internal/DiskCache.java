@@ -16,14 +16,20 @@ import java.lang.ref.WeakReference;
  */
 public class DiskCache implements Cache {
 
+    private static final int DEFAULT_DISK_SIZE = 1024 * 1024 * 15; // 15MB
+
     private static final int BUFFER_SIZE = 1024;
 
     private WeakReference<Context> context;
     private LruCounter lruCounter;
 
     public DiskCache(Context context) {
+        this(context, DEFAULT_DISK_SIZE);
+    }
+
+    public DiskCache(Context context, long maxDiskSize) {
         this.context = new WeakReference<>(context);
-        this.lruCounter = new LruCounter(this);
+        this.lruCounter = new LruCounter(this, maxDiskSize);
     }
 
     Context getContext() {
