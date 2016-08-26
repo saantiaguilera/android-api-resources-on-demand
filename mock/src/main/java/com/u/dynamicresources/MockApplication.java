@@ -15,5 +15,6 @@ public class MockApplication extends Application {
         super.onCreate();
 
         Fresco.initialize(this);
+        Pomu.initialize(this);
     }
 }

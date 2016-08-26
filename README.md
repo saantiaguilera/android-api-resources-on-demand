@@ -8,12 +8,16 @@ What it does is, when your application is in need of a resource, it will at that
 
 ### Usage:
 
-If your application targets API levels lower than 19, where Dalvik is the VM, its highly recommended to use Fresco for image loading.
+Initialize Pomu in your Application's onCreate().
+
+Also, if your application targets API levels lower than 19, where Dalvik is the VM, its highly recommended to use Fresco for image loading.
 
 ```Java
    //In your applications onCreate()
    Fresco.initialize(this);
-   
+   Pomu.initialize(this);
+
+   //Optional
    //If you plan on using custom configurations (like custom cache / network client)
    Pipeline.getInstance().setConfigurations(configurations); //Or wherever you want, but to have a cohesive configuration across all resources its better here :)
 ```
