@@ -27,8 +27,6 @@ import okhttp3.Response;
  */
 final class Streamer {
 
-    private static final int BUFFER_SIZE = 1024;
-
     private @NonNull WeakReference<Context> context;
 
     private @NonNull OkHttpClient client;

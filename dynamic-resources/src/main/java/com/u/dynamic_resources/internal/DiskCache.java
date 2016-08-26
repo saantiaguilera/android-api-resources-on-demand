@@ -57,6 +57,9 @@ public class DiskCache implements Cache {
     public void put(@NonNull Uri key, @NonNull InputStream data) throws Exception {
         File file = Files.create(context, key);
         write(file, data);
+
+        CachePrefs.mark(context, file.getPath());
+        CachePrefs.evictIfNeeded(context, this);
     }
 
     @Override
@@ -66,12 +69,15 @@ public class DiskCache implements Cache {
 
     @Override
     public @Nullable File get(@NonNull Uri key) {
-        return Files.create(context, key);
+        File file = Files.create(context, key);
+        CachePrefs.mark(context, file.getPath());
+        return file;
     }
 
     @Override
     public boolean remove(@NonNull Uri key) {
-        File file = Files.create(context, key);
+        //Consider the key already hashed (its a file, since he knows what he wants to remove)
+        File file = new File(key.toString());
 
         return !file.exists() || file.delete();
     }
