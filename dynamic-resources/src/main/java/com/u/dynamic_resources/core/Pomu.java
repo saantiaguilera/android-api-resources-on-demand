@@ -29,8 +29,14 @@ public final class Pomu {
 
     private static ScreenDensity dpi = null;
 
+    private static void init(@NonNull Context context) {
+        dpi = ScreenDensity.get(context.getResources());
+    }
+
     public static @NonNull Builder create(@NonNull Context context) {
-        if (dpi == null) throw new NullPointerException("No screen dpi available. Maybe you forgot to initialize Pomu??");
+        if (dpi == null) {
+            init(context);
+        }
 
         return new Builder(context);
     }

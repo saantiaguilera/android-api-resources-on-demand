@@ -5,6 +5,8 @@ import android.support.annotation.Nullable;
 
 import com.u.dynamic_resources.core.Configurations;
 
+import okhttp3.OkHttpClient;
+
 /**
  * Created by saguilera on 8/25/16.
  */
@@ -12,7 +14,7 @@ public class Pipeline {
 
     private static Pipeline instance;
 
-    private @Nullable Configurations configurations = null;
+    private @Nullable OkHttpClient client;
 
     public static @NonNull Pipeline getInstance() {
         if (instance == null) {
@@ -26,18 +28,20 @@ public class Pipeline {
         return instance;
     }
 
-    private Pipeline() {}
+    private Pipeline() {
+        client = null;
+    }
 
-    public void setConfigurations(@Nullable Configurations configurations) {
-        this.configurations = configurations;
+    public void setConfigurations(@NonNull Configurations configurations) {
+        this.client = configurations.getClient();
     }
 
     @SuppressWarnings("ConstantConditions")
     public void fetch(@NonNull Request request) {
         Streamer.Builder builder = Streamer.with(request.getContext());
 
-        if (!Validator.checkNull(configurations, configurations.getClient())) {
-            builder.client(configurations.getClient());
+        if (client != null) {
+            builder.client(client);
         }
 
         if (request.getCallback() != null) {

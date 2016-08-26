@@ -13,14 +13,4 @@ public final class Validator {
         }
     }
 
-    public static boolean checkNull(Object... args) {
-        for (Object object : args) {
-            if (object == null) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 }
