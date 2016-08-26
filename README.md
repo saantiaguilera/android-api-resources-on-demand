@@ -79,4 +79,3 @@ You can give to Pomu a UrlDensityFormatter and have it do this for you instead o
 - [x] Fresco and native ImageView support (for memory issues in Dalvik systems Fresco was selected over Picasso)
 - [x] Screen density images format support
 - [ ] Custom cache 
-- [ ] Wrap the resources inside a inner dir (I forgot) #TODO

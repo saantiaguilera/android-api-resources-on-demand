@@ -12,6 +12,8 @@ import java.security.MessageDigest;
  */
 final class Files {
 
+    private static final String DEFAULT_DIR = "dynamic-resources";
+
     private static final String HASH = "MD5";
 
     private static final int STRING_RADIX_REPRESENTATION = 16;
@@ -40,7 +42,15 @@ final class Files {
 
     public static File create(Context context, Uri uri) {
         String url = hash(uri.toString()) + stripExtension(uri.toString());
-        return new File(context.getFilesDir(), url);
+        
+        File dir = new File(context.getFilesDir(), hash(DEFAULT_DIR));
+        if (!dir.isDirectory()) {
+            if (!dir.mkdirs()) {
+                throw new IllegalStateException("Couldnt create directory for resources, missing some permissions?");
+            }
+        }
+
+        return new File(dir, url);
     }
 
 }
