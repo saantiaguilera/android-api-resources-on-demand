@@ -18,9 +18,15 @@ public class DiskCache implements Cache {
     private static final int BUFFER_SIZE = 1024;
 
     private Context context;
+    private LruCounter lruCounter;
 
     public DiskCache(Context context) {
         this.context = context;
+        this.lruCounter = new LruCounter(this);
+    }
+
+    Context getContext() {
+        return context;
     }
 
     @WorkerThread
@@ -58,8 +64,8 @@ public class DiskCache implements Cache {
         File file = Files.create(context, key);
         write(file, data);
 
-        CachePrefs.mark(context, file.getPath());
-        CachePrefs.evictIfNeeded(context, this);
+        lruCounter.add(file);
+        lruCounter.evict();
     }
 
     @Override
@@ -70,7 +76,7 @@ public class DiskCache implements Cache {
     @Override
     public @Nullable File get(@NonNull Uri key) {
         File file = Files.create(context, key);
-        CachePrefs.mark(context, file.getPath());
+        lruCounter.add(file);
         return file;
     }
 

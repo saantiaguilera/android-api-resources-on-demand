@@ -40,13 +40,8 @@ public class Pipeline {
 
     @SuppressWarnings("ConstantConditions")
     public void fetch(@NonNull Request request) {
-        Streamer.Builder builder = Streamer.with(request.getContext());
-
-        if (cache == null) {
-            cache = new DiskCache(request.getContext());
-        }
-
-        builder.cache(cache);
+        Streamer.Builder builder = Streamer.with(request.getContext())
+                .cache(cache);
 
         if (client != null) {
             builder.client(client);
