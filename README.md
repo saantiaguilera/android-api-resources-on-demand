@@ -14,8 +14,8 @@ If your application targets API levels lower than 19, where Dalvik is the VM, it
    //In your applications onCreate()
    Fresco.initialize(this);
    
-	//If you plan on using custom configurations (like custom cache / network client)
-	Pipeline.getInstance().setConfigurations(configurations); //Or wherever you want, but to have a cohesive configuration across all resources its better here :)
+   //If you plan on using custom configurations (like custom cache / network client)
+   Pipeline.getInstance().setConfigurations(configurations); //Or wherever you want, but to have a cohesive configuration across all resources its better here :)
 ```
 
 For loading a resource just:
