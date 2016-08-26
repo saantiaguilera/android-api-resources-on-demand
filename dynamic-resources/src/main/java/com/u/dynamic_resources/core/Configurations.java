@@ -1,9 +1,11 @@
 package com.u.dynamic_resources.core;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.u.dynamic_resources.internal.Cache;
+import com.u.dynamic_resources.internal.DiskCache;
 
 import okhttp3.OkHttpClient;
 
@@ -14,6 +16,13 @@ public class Configurations {
 
     private @Nullable OkHttpClient client;
     private @Nullable Cache cache;
+
+    static Configurations getDefault(Context context) {
+        return new Builder()
+                .okHttpClient(new OkHttpClient.Builder().build())
+                .cache(new DiskCache(context))
+                .build();
+    }
 
     private Configurations(@Nullable OkHttpClient client,
                            @Nullable Cache cache) {
