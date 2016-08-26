@@ -3,11 +3,14 @@ package com.u.dynamic_resources.internal;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Pair;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -19,48 +22,54 @@ class LruCounter {
 
     private static final String SHARED_PREFERENCES_DIR = LruCounter.class.getName() + "dynamic-resources";
 
-    private Context context;
+    private WeakReference<Context> context;
 
-    private List<Pair<Long, File>> files;
+    private List<Container> files;
     private int size;
 
     private DiskCache cache;
     private SharedPreferences sharedPreferences;
 
     public LruCounter(DiskCache cache) {
-        this.context = cache.getContext();
+        this.context = new WeakReference<>(cache.getContext());
         this.cache = cache;
-        sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_DIR, Context.MODE_PRIVATE);
+        sharedPreferences = getContext().getSharedPreferences(SHARED_PREFERENCES_DIR, Context.MODE_PRIVATE);
 
         size = 0;
         files = new ArrayList<>();
 
-        File dir = Files.createDir(context);
+        File dir = Files.createDir(getContext());
         if (dir.exists()) {
             for (File child : dir.listFiles()) {
-                files.add(new Pair<>(sharedPreferences.getLong(child.getPath(), 0), child));
+                files.add(new Container(sharedPreferences.getLong(child.getPath(), 0), child.getPath(), child.length()));
                 size += child.length();
             }
 
-            Collections.sort(files, Collections.reverseOrder());
+            Collections.sort(files, new ReverseComparator());
         }
     }
 
+    private Context getContext() {
+        return context.get();
+    }
+
     public void evict() {
-        File dir = Files.createDir(context);
-        if (dir.exists()) {
-            SharedPreferences.Editor editor = sharedPreferences.edit();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        boolean changed = false;
 
-            while (size > DISK_SIZE && !files.isEmpty()) {
-                File file = files.get(0).second;
+        while (size > DISK_SIZE && !files.isEmpty()) {
+            Container container = files.get(0);
 
-                size -= file.length();
+            size -= container.getSize();
 
-                cache.remove(Uri.parse(file.getPath()));
-                files.remove(0);
-                editor.remove(file.getPath());
-            }
+            cache.remove(Uri.parse(container.getPath()));
+            files.remove(0);
+            editor.remove(container.getPath());
 
+            changed = true;
+        }
+
+        if (changed) {
             editor.apply();
         }
     }
@@ -70,20 +79,57 @@ class LruCounter {
                 .putLong(file.getPath(), System.currentTimeMillis())
                 .apply();
 
-
-        Pair<Long, File> existing = null;
-        for (Pair<Long, File> f : files) {
-            if (f.second.getPath().contentEquals(file.getPath())) {
-                existing = f;
+        Container existing = null;
+        for (Container container : files) {
+            if (container.getPath().contentEquals(file.getPath())) {
+                existing = container;
                 break;
             }
         }
 
         if (existing != null) {
             files.remove(existing);
+        } else {
+            size += file.length();
         }
 
-        files.add(new Pair<>(System.currentTimeMillis(), file));
+        files.add(new Container(System.currentTimeMillis(), file.getPath(), file.length()));
+    }
+
+    class ReverseComparator implements Comparator<Container> {
+
+        @Override
+        public int compare(Container lsh, Container lrh) {
+            return Long.valueOf(lsh.getTime()).compareTo(lrh.getTime());
+        }
+
+    }
+
+    static class Container {
+
+        private long time;
+        private @NonNull String path;
+        private long size;
+
+        public Container(long time, @NonNull String path, long size) {
+            this.time = time;
+            this.path = path;
+            this.size = size;
+        }
+
+        public long getSize() {
+            return size;
+        }
+
+        public long getTime() {
+            return time;
+        }
+
+        @NonNull
+        public String getPath() {
+            return path;
+        }
+
     }
 
 }

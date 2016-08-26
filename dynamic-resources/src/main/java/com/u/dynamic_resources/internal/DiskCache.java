@@ -9,6 +9,7 @@ import android.support.annotation.WorkerThread;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 
 /**
  * Created by saguilera on 8/26/16.
@@ -17,16 +18,16 @@ public class DiskCache implements Cache {
 
     private static final int BUFFER_SIZE = 1024;
 
-    private Context context;
+    private WeakReference<Context> context;
     private LruCounter lruCounter;
 
     public DiskCache(Context context) {
-        this.context = context;
+        this.context = new WeakReference<>(context);
         this.lruCounter = new LruCounter(this);
     }
 
     Context getContext() {
-        return context;
+        return context.get();
     }
 
     @WorkerThread
@@ -62,7 +63,7 @@ public class DiskCache implements Cache {
     @Override
     @WorkerThread
     public File put(@NonNull Uri key, @NonNull InputStream data) throws Exception {
-        File file = Files.create(context, key);
+        File file = Files.create(getContext(), key);
         write(file, data);
 
         lruCounter.add(file);
@@ -73,12 +74,12 @@ public class DiskCache implements Cache {
 
     @Override
     public boolean contains(@NonNull Uri key) {
-        return Files.create(context, key).exists();
+        return Files.create(getContext(), key).exists();
     }
 
     @Override
     public @Nullable File get(@NonNull Uri key) {
-        File file = Files.create(context, key);
+        File file = Files.create(getContext(), key);
         lruCounter.add(file);
         return file;
     }
@@ -95,7 +96,7 @@ public class DiskCache implements Cache {
     @Override
     @WorkerThread
     public void clear() {
-        deleteAllIn(Files.createDir(context));
+        deleteAllIn(Files.createDir(getContext()));
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
