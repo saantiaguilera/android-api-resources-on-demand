@@ -15,6 +15,7 @@ public class Pipeline {
     private static Pipeline instance;
 
     private @Nullable OkHttpClient client;
+    private @Nullable Cache cache;
 
     public static @NonNull Pipeline getInstance() {
         if (instance == null) {
@@ -34,11 +35,18 @@ public class Pipeline {
 
     public void setConfigurations(@NonNull Configurations configurations) {
         this.client = configurations.getClient();
+        this.cache = configurations.getCache();
     }
 
     @SuppressWarnings("ConstantConditions")
     public void fetch(@NonNull Request request) {
         Streamer.Builder builder = Streamer.with(request.getContext());
+
+        if (cache == null) {
+            cache = new DiskCache(request.getContext());
+        }
+
+        builder.cache(cache);
 
         if (client != null) {
             builder.client(client);

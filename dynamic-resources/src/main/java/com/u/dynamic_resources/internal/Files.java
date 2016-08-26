@@ -40,9 +40,7 @@ final class Files {
         }
     }
 
-    public static File create(Context context, Uri uri) {
-        String url = hash(uri.toString()) + stripExtension(uri.toString());
-
+    static File createDir(Context context) {
         File dir = new File(context.getFilesDir(), DEFAULT_DIR);
         if (!dir.isDirectory()) {
             if (!dir.mkdirs()) {
@@ -50,7 +48,12 @@ final class Files {
             }
         }
 
-        return new File(dir, url);
+        return dir;
+    }
+
+    public static File create(Context context, Uri uri) {
+        String url = hash(uri.toString()) + stripExtension(uri.toString());
+        return new File(createDir(context), url);
     }
 
 }

@@ -7,14 +7,11 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
-import android.support.annotation.WorkerThread;
 
 import com.u.dynamic_resources.internal.loading.FileCallback;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,7 +42,8 @@ final class Streamer {
      */
     private @Nullable FileCallback callback;
     private @NonNull Uri uri;
-    private @NonNull File output;
+
+    private @NonNull Cache cache;
 
     //For writing files
     private static final ExecutorService executor = Executors.newFixedThreadPool(1);
@@ -54,9 +52,11 @@ final class Streamer {
         return new Builder(context);
     }
 
+    @SuppressWarnings("ConstantConditions")
     private Streamer(@NonNull Context context,
                      @Nullable OkHttpClient client,
                      @Nullable FileCallback callback,
+                     @Nullable Cache cache,
                      @NonNull Uri uri) {
         this.context = new WeakReference<>(context);
 
@@ -66,14 +66,14 @@ final class Streamer {
             this.client = new OkHttpClient.Builder().build();
         }
 
+        this.cache = cache;
         this.callback = callback;
         this.uri = uri;
-        this.output = Files.create(context, uri);
     }
 
     @UiThread
     private void fetch() {
-        if (output.exists() && callback != null) {
+        if (cache.contains(uri) && callback != null) {
             new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new SuccessRunnable());
             return;
         }
@@ -102,7 +102,9 @@ final class Streamer {
                     executor.submit(new Runnable() {
                         @Override
                         public void run() {
-                            write(response.body().byteStream());
+                            if (response != null) {
+                                Streamer.this.onResponse(response);
+                            }
                         }
                     });
                 }
@@ -110,42 +112,12 @@ final class Streamer {
         });
     }
 
-    @WorkerThread
-    private void write(InputStream is) {
-        FileOutputStream fos = null;
-        Handler handler = new Handler(Looper.getMainLooper());
-
+    private void onResponse(@NonNull Response response) {
         try {
-            if (output.exists()) {
-                //File already exists (was downloaded probably in parallel twice)
-                handler.postAtFrontOfQueue(new SuccessRunnable());
-                return;
-            }
-
-            fos = new FileOutputStream(output);
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int bytesRead = 0;
-            while ((bytesRead = is.read(buffer, 0, buffer.length)) >= 0) {
-                fos.write(buffer, 0, bytesRead);
-            }
-
-            fos.flush();
-        } catch (IOException e) {
-            handler.postAtFrontOfQueue(new FailureRunnable(e));
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-
-                if (fos != null) {
-                    fos.close();
-                }
-
-                handler.postAtFrontOfQueue(new SuccessRunnable());
-            } catch (Exception e) {
-                handler.postAtFrontOfQueue(new FailureRunnable(e));
-            }
+            cache.put(uri, response.body().byteStream());
+            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new SuccessRunnable());
+        } catch (Exception e) {
+            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new FailureRunnable(e));
         }
     }
 
@@ -155,7 +127,8 @@ final class Streamer {
 
         private OkHttpClient client = null;
         private FileCallback callback = null;
-        private Uri uri = null;
+
+        private Cache cache = null;
 
         Builder(@NonNull Context context) {
             this.context = new WeakReference<>(context);
@@ -171,12 +144,18 @@ final class Streamer {
             return this;
         }
 
+        public Builder cache(@NonNull Cache cache) {
+            this.cache = cache;
+            return this;
+        }
+
         public Streamer fetch(@NonNull Uri uri) {
             Validator.checkNullAndThrow(this, context, uri);
 
             Streamer streamer = new Streamer(context.get(),
                     client,
                     callback == null ? null : callback,
+                    cache,
                     uri);
             streamer.fetch();
             return streamer;
@@ -203,7 +182,11 @@ final class Streamer {
         @Override
         public void run() {
             if (callback != null) {
-                callback.onSuccess(output);
+                File file = cache.get(uri);
+
+                if (file != null) {
+                    callback.onSuccess(file);
+                }
             }
         }
     }
