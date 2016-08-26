@@ -56,6 +56,8 @@ public class FrescoImageController {
     private boolean localThumbnailPreview;
 
     private boolean noCache;
+    private boolean noDiskCache;
+    private boolean noMemmoryCache;
 
     /**
      * Static method to create an empty builder. The same can be achieved by doing
@@ -76,7 +78,7 @@ public class FrescoImageController {
                                   @Nullable ResizeOptions resizeOpt, @Nullable ImageDecodeOptions decodeOpt,
                                   @Nullable Postprocessor postprocessor,
                                   boolean rotate, boolean ttr, boolean pr, boolean ltp,
-                                  boolean noCache) {
+                                  boolean noCache, boolean noDiskCache, boolean noMemmoryCache) {
         this.contextRef = contextRef;
 
         this.view = new WeakReference<>(view);
@@ -93,6 +95,8 @@ public class FrescoImageController {
         this.localThumbnailPreview = ltp;
 
         this.noCache = noCache;
+        this.noDiskCache = noDiskCache;
+        this.noMemmoryCache = noMemmoryCache;
 
         ControllerListener<ImageInfo> listener = new BaseControllerListener<ImageInfo>() {
             @Override
@@ -103,7 +107,7 @@ public class FrescoImageController {
                     callback.get().onSuccess();
                 }
 
-                if (!isCacheEnabled()) {
+                if (!isCacheEnabled() || !isMemmoryCacheEnabled()) {
                     Fresco.getImagePipeline().evictFromCache(getUri());
                 }
             }
@@ -123,7 +127,7 @@ public class FrescoImageController {
                 .setLocalThumbnailPreviewsEnabled(localThumbnailPreview)
                 .setProgressiveRenderingEnabled(progressiveRendering);
 
-        if (noCache) {
+        if (noCache || noDiskCache) {
             request.disableDiskCache();
         }
 
@@ -198,6 +202,20 @@ public class FrescoImageController {
     /**
      * Getter
      */
+    public boolean isMemmoryCacheEnabled() {
+        return !noMemmoryCache;
+    }
+
+    /**
+     * Getter
+     */
+    public boolean isDiskCacheEnabled() {
+        return !noDiskCache;
+    }
+
+    /**
+     * Getter
+     */
     public boolean isLocalThumbnailPreviewEnabled() {
         return localThumbnailPreview;
     }
@@ -260,6 +278,14 @@ public class FrescoImageController {
             builder.noCache();
         }
 
+        if (!isDiskCacheEnabled()) {
+            builder.noDiskCache();
+        }
+
+        if (!isMemmoryCacheEnabled()) {
+            builder.noMemmoryCache();
+        }
+
         if (getDecodeOptions() != null) {
             builder.decodeOptions(getDecodeOptions());
         }
@@ -294,6 +320,8 @@ public class FrescoImageController {
         private boolean progressiveRendering = false;
         private boolean localThumbnailPreview = false;
         private boolean noCache = false;
+        private boolean noDiskCache = false;
+        private boolean noMemmoryCache = false;
         private @Nullable ImageDecodeOptions decodeOptions = null;
         private @Nullable Postprocessor postprocessor = null;
 
@@ -392,13 +420,35 @@ public class FrescoImageController {
         }
 
         /**
-         * Dont cache the image.
+         * Dont cache the image neither in disk nor image.
          * By default all images are cached
          *
          * @return Builder
          */
         public Builder noCache() {
             this.noCache = true;
+            return this;
+        }
+
+        /**
+         * Dont cache the image in disk.
+         * By default all images are cached
+         *
+         * @return Builder
+         */
+        public Builder noDiskCache() {
+            this.noDiskCache = true;
+            return this;
+        }
+
+        /**
+         * Dont cache the image in memmory
+         * By default all images are cached
+         *
+         * @return Builder
+         */
+        public Builder noMemmoryCache() {
+            this.noMemmoryCache = true;
             return this;
         }
 
@@ -496,7 +546,7 @@ public class FrescoImageController {
                     resizeOptions, decodeOptions,
                     postprocessor,
                     rotate, tapToRetry, progressiveRendering, localThumbnailPreview,
-                    noCache);
+                    noCache, noDiskCache, noMemmoryCache);
         }
 
     }

@@ -135,6 +135,7 @@ public final class Pomu {
                                 }
 
                                 builder.load(file.toURI().toString()) //Its the same to do this or use the schema: "file://" + file.getPath()
+                                        .noDiskCache() // Because doh
                                         .listener(new FrescoImageController.Callback() {
                                             //This is why I hate not using eventbus and getting callback hells :)
                                             @Override

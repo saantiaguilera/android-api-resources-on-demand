@@ -36,6 +36,7 @@ public class MockActivity extends Activity {
             @Override
             public void onSuccess() {
                 Log.w("Sansa", "onSuccess");
+                System.gc();
             }
 
             @Override
