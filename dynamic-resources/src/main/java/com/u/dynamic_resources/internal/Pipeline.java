@@ -38,9 +38,15 @@ public class Pipeline {
         this.cache = configurations.getCache();
     }
 
+    public void clearCaches() {
+        if (cache != null) {
+            cache.clear();
+        }
+    }
+
     @SuppressWarnings("ConstantConditions")
     public void fetch(@NonNull Request request) {
-        Streamer.Builder builder = Streamer.with(request.getContext())
+        Streamer.Builder builder = Streamer.create()
                 .cache(cache);
 
         if (client != null) {

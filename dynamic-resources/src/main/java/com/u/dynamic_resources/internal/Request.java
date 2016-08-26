@@ -1,6 +1,5 @@
 package com.u.dynamic_resources.internal;
 
-import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,15 +13,11 @@ import java.lang.ref.WeakReference;
  */
 public class Request {
 
-    private @NonNull WeakReference<Context> context;
     private @Nullable WeakReference<FileCallback> callback;
     private @NonNull Uri uri;
 
-    private Request(@NonNull Context context,
-                    @Nullable FileCallback callback,
+    private Request(@Nullable FileCallback callback,
                     @NonNull Uri uri) {
-        this.context = new WeakReference<>(context);
-
         if (callback != null) {
             this.callback = new WeakReference<>(callback);
         } else {
@@ -37,25 +32,17 @@ public class Request {
         return uri;
     }
 
-    @NonNull
-    public Context getContext() {
-        return context.get();
-    }
-
     @Nullable
     public FileCallback getCallback() {
-        return callback.get();
+        return callback == null ? null : callback.get();
     }
 
     public static class Builder {
 
-        private WeakReference<Context> context;
         private WeakReference<FileCallback> callback;
         private Uri uri;
 
-        public Builder(@NonNull Context context) {
-            this.context = new WeakReference<>(context);
-        }
+        public Builder() {}
 
         public Builder callback(@NonNull FileCallback callback) {
             this.callback = new WeakReference<>(callback);
@@ -68,9 +55,9 @@ public class Request {
         }
 
         public Request build() {
-            Validator.checkNullAndThrow(this, context, uri);
+            Validator.checkNullAndThrow(this, uri);
 
-            return new Request(context.get(), callback.get(), uri);
+            return new Request(callback.get(), uri);
         }
 
     }

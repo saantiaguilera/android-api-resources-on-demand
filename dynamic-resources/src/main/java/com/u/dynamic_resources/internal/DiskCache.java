@@ -60,12 +60,15 @@ public class DiskCache implements Cache {
     }
 
     @Override
-    public void put(@NonNull Uri key, @NonNull InputStream data) throws Exception {
+    @WorkerThread
+    public File put(@NonNull Uri key, @NonNull InputStream data) throws Exception {
         File file = Files.create(context, key);
         write(file, data);
 
         lruCounter.add(file);
         lruCounter.evict();
+
+        return file;
     }
 
     @Override
@@ -81,6 +84,7 @@ public class DiskCache implements Cache {
     }
 
     @Override
+    @WorkerThread
     public boolean remove(@NonNull Uri key) {
         //Consider the key already hashed (its a file, since he knows what he wants to remove)
         File file = new File(key.toString());
@@ -89,11 +93,13 @@ public class DiskCache implements Cache {
     }
 
     @Override
+    @WorkerThread
     public void clear() {
         deleteAllIn(Files.createDir(context));
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
+    @WorkerThread
     private void deleteAllIn(File file) {
         if (file.isDirectory())
             for (File child : file.listFiles())

@@ -12,7 +12,7 @@ import java.io.InputStream;
  */
 public interface Cache {
 
-    void put(@NonNull Uri key, @NonNull InputStream data) throws Exception;
+    File put(@NonNull Uri key, @NonNull InputStream data) throws Exception;
 
     boolean contains(@NonNull Uri key);
 

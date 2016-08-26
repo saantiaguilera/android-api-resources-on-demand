@@ -114,7 +114,7 @@ public final class Pomu {
         public void into(@NonNull final ImageView view) {
             Validator.checkNullAndThrow(this, uri);
 
-            Request request = new Request.Builder(context.get())
+            Request request = new Request.Builder()
                     .uri(uri)
                     .callback(new FileCallback() {
                         @Override

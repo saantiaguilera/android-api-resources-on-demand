@@ -27,8 +27,6 @@ import okhttp3.Response;
  */
 final class Streamer {
 
-    private @NonNull WeakReference<Context> context;
-
     private @NonNull OkHttpClient client;
 
     /**
@@ -46,18 +44,15 @@ final class Streamer {
     //For writing files
     private static final ExecutorService executor = Executors.newFixedThreadPool(1);
 
-    public static Builder with(@NonNull Context context) {
-        return new Builder(context);
+    public static Builder create() {
+        return new Builder();
     }
 
     @SuppressWarnings("ConstantConditions")
-    private Streamer(@NonNull Context context,
-                     @Nullable OkHttpClient client,
+    private Streamer(@Nullable OkHttpClient client,
                      @Nullable FileCallback callback,
                      @Nullable Cache cache,
                      @NonNull Uri uri) {
-        this.context = new WeakReference<>(context);
-
         if (client != null) {
             this.client = client;
         } else {
@@ -72,7 +67,7 @@ final class Streamer {
     @UiThread
     private void fetch() {
         if (cache.contains(uri) && callback != null) {
-            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new SuccessRunnable());
+            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new SuccessRunnable(cache.get(uri)));
             return;
         }
 
@@ -112,8 +107,8 @@ final class Streamer {
 
     private void onResponse(@NonNull Response response) {
         try {
-            cache.put(uri, response.body().byteStream());
-            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new SuccessRunnable());
+            File file = cache.put(uri, response.body().byteStream());
+            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new SuccessRunnable(file));
         } catch (Exception e) {
             new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new FailureRunnable(e));
         }
@@ -121,16 +116,12 @@ final class Streamer {
 
     static class Builder {
 
-        private WeakReference<Context> context = null;
-
         private OkHttpClient client = null;
         private FileCallback callback = null;
 
         private Cache cache = null;
 
-        Builder(@NonNull Context context) {
-            this.context = new WeakReference<>(context);
-        }
+        Builder() {}
 
         public Builder client(@NonNull OkHttpClient client) {
             this.client = client;
@@ -148,10 +139,9 @@ final class Streamer {
         }
 
         public Streamer fetch(@NonNull Uri uri) {
-            Validator.checkNullAndThrow(this, context, uri);
+            Validator.checkNullAndThrow(this, uri);
 
-            Streamer streamer = new Streamer(context.get(),
-                    client,
+            Streamer streamer = new Streamer(client,
                     callback == null ? null : callback,
                     cache,
                     uri);
@@ -162,9 +152,9 @@ final class Streamer {
     }
 
     class FailureRunnable implements Runnable {
-        private Exception exception;
+        private @NonNull Exception exception;
 
-        FailureRunnable(Exception e) {
+        FailureRunnable(@NonNull Exception e) {
             exception = e;
         }
 
@@ -177,14 +167,16 @@ final class Streamer {
     }
 
     class SuccessRunnable implements Runnable {
+        private @Nullable File file;
+
+        SuccessRunnable(@Nullable File file) {
+            this.file = file;
+        }
+
         @Override
         public void run() {
-            if (callback != null) {
-                File file = cache.get(uri);
-
-                if (file != null) {
-                    callback.onSuccess(file);
-                }
+            if (callback != null && file != null) {
+                callback.onSuccess(file);
             }
         }
     }
