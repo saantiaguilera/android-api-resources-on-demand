@@ -17,8 +17,12 @@ import com.u.dynamic_resources.screen.UrlDensityFormatter;
  */
 public class MockActivity extends Activity {
 
-    private static final String IMAGEN_ESTUFA = "http://www.estufas1.com.mx/images/e_ge/estufa_piso_ge_EG3094DBI.jpg";
-    private static final String IMAGEN_CHIMENEA_FORMATTED = "http://www.okdecoracion.com/images/chimenea%s.jpg"; //1 al 6
+    private static final String EXAMPLE_IMAGE_1 = "http://www.estufas1.com.mx/images/e_ge/estufa_piso_ge_EG3094DBI.jpg";
+    private static final String EXAMPLE_IMAGE_2 = "http://i.stack.imgur.com/Pryyn.png";
+    private static final String EXAMPLE_IMAGE_3 = "https://d319i1jp2i9xq6.cloudfront.net/upload/images/31383/31383_p.jpg";
+
+    //This one goes from 1 to 6.
+    private static final String EXAMPLE_IMAGE_4_FORMATTED = "http://www.okdecoracion.com/images/chimenea%s.jpg";
 
     private UrlDensityFormatter urlFormatter;
     private BitmapCallback bitmapCallback;
@@ -67,13 +71,13 @@ public class MockActivity extends Activity {
 
         //Static image with fresco without custom controller
         Pomu.create(this)
-                .url(IMAGEN_ESTUFA)
+                .url(EXAMPLE_IMAGE_1)
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_1));
 
         //Static image with fresco with custom controller
         Pomu.create(this)
-                .url(IMAGEN_ESTUFA)
+                .url(EXAMPLE_IMAGE_2)
                 .callback(bitmapCallback)
                 .controller(FrescoImageController.create(this)
                         .autoRotate(true)
@@ -83,21 +87,21 @@ public class MockActivity extends Activity {
 
         //Dynamic image with fresco without custom controller
         Pomu.create(this)
-                .url(IMAGEN_CHIMENEA_FORMATTED, urlFormatter)
+                .url(EXAMPLE_IMAGE_4_FORMATTED, urlFormatter)
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_3));
 
 
         //Static image with imageview
         Pomu.create(this)
-                .url(IMAGEN_ESTUFA)
+                .url(EXAMPLE_IMAGE_3)
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_4));
 
 
         //Dynamic image with imageview
         Pomu.create(this)
-                .url(IMAGEN_CHIMENEA_FORMATTED, urlFormatter)
+                .url(EXAMPLE_IMAGE_4_FORMATTED, urlFormatter)
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_5));
     }
