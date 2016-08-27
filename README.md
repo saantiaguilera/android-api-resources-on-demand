@@ -41,7 +41,7 @@ For customizing fresco loadings, you can provide a
         .controller(FrescoImageController.create(this)
            .autoRotate(true)
            .resize(400, 400)
-			  .noCache()
+           .noCache()
            .progressiveRendering(true) 
            // and stuff...
         )...
