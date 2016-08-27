@@ -126,7 +126,7 @@ public final class Pomu {
 
                         @Override
                         public void onSuccess(@NonNull File file) {
-                            if (view instanceof SimpleDraweeView) {
+                            if (view instanceof DraweeView) {
                                 //If fresco is available, take advantage of it
                                 FrescoImageController.Builder builder = controller;
 
