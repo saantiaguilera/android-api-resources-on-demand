@@ -80,7 +80,7 @@ You can give to Pomu a UrlDensityFormatter and have it do this for you instead o
 
 ### Features:
 
-- [x] Persistable resources once downloaded, to avoid high network traffic and bad ux for the user
+- [x] Persistable resources once downloaded, to avoid high network traffic and bad ux for the user.
 - [x] Fresco and native ImageView support (for memory issues in Dalvik systems Fresco was selected over Picasso)
 - [x] Screen density images format support
-- [ ] Custom cache 
+- [x] Custom cache. By default it's a LRU cache up to 15 mb (maxDiskSize can also be tweaked if you still want to have LRU)
