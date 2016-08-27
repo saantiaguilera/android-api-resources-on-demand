@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Pair;
 
 import java.io.File;
 import java.lang.ref.WeakReference;

@@ -1,6 +1,5 @@
 package com.u.dynamic_resources.internal;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,7 +11,6 @@ import com.u.dynamic_resources.internal.loading.FileCallback;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
