@@ -4,10 +4,15 @@ import android.content.res.Resources;
 import android.util.DisplayMetrics;
 
 /**
+ * Screen density enum for the given android screens
+ *
  * Created by saguilera on 8/24/16.
  */
 public enum ScreenDensity {
 
+    /**
+     * Supported densities
+     */
     LDPI(ScreenDensity.DENSITY_L),
     MDPI(ScreenDensity.DENSITY_M),
     HDPI(ScreenDensity.DENSITY_H),
@@ -26,14 +31,27 @@ public enum ScreenDensity {
 
     private int density;
 
+    /**
+     * Package access constructor for the enums
+     * @param density of the screen
+     */
     ScreenDensity(int density) {
         this.density = density;
     }
 
+    /**
+     * Getter of the density the enum has
+     * @return density of the enum
+     */
     public int getDensity() {
         return density;
     }
 
+    /**
+     * Get the density of the device
+     * @param resources to fetch the current density
+     * @return ScreenDensity with the device density
+     */
     public static ScreenDensity get(Resources resources) {
         int densityDpi = resources.getDisplayMetrics().densityDpi;
 
