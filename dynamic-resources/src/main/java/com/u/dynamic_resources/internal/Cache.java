@@ -16,6 +16,7 @@ public interface Cache {
 
     /**
      * Put new data in the cache with a given key.
+     * This will always be run in a background thread.
      * @param key key which will be used in every other transaction to retreive the data
      * @param data byte[] in a buffer of the image
      * @return File a file with the image data
@@ -24,7 +25,8 @@ public interface Cache {
     File put(@NonNull Uri key, @NonNull InputStream data) throws Exception;
 
     /**
-     * Method to know if a key is in the cache
+     * Method to know if a key is in the cache.
+     * This will be run in the main thread.
      * @param key key which will be used in every other transaction
      * @return true if the key exists, false otherwise
      */
@@ -32,20 +34,23 @@ public interface Cache {
 
     /**
      * Get the file asociated to a given key.
+     * This could be run in the main thread.
      * @param key key which will be used in every other transaction
      * @return File if the key exists, null otherwise
      */
     @Nullable File get(@NonNull Uri key);
 
     /**
-     * Remove a key from the cache
+     * Remove a key from the cache.
+     * This will always be run in a background thread.
      * @param key key which will be used in every other transaction
      * @return true if was removed, false otherwise
      */
     boolean remove(@NonNull Uri key);
 
     /**
-     * Clear the cache data
+     * Clear the cache data.
+     * This will always be run in a background thread.
      */
     void clear();
 

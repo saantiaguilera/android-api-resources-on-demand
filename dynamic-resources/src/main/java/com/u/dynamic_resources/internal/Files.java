@@ -2,6 +2,7 @@ package com.u.dynamic_resources.internal;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -51,7 +52,7 @@ final class Files {
         return dir;
     }
 
-    public static File create(Context context, Uri uri) {
+    public static @NonNull File create(Context context, Uri uri) {
         String url = hash(uri.toString()) + stripExtension(uri.toString());
         return new File(createDir(context), url);
     }
