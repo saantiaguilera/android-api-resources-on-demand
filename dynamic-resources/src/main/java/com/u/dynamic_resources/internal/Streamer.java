@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
 
 import com.u.dynamic_resources.internal.loading.FileCallback;
 

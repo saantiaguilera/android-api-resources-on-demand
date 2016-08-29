@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
 import com.facebook.drawee.view.DraweeView;
-import com.facebook.drawee.view.SimpleDraweeView;
 import com.u.dynamic_resources.internal.Pipeline;
 import com.u.dynamic_resources.internal.Request;
 import com.u.dynamic_resources.internal.Validator;
