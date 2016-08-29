@@ -52,14 +52,26 @@ public class Configurations {
         this.cache = cache;
     }
 
+    /**
+     * Getter for the networking client
+     * @return Client if existing
+     */
     public @Nullable OkHttpClient getClient() {
         return client;
     }
 
+    /**
+     * Getter for the cache
+     * @return cache if existing
+     */
     public @Nullable Cache getCache() {
         return cache;
     }
 
+    /**
+     * Create a new builder with this configurations
+     * @return Builder
+     */
     public Builder newBuilder() {
         Builder builder = new Builder();
 
@@ -74,6 +86,9 @@ public class Configurations {
         return builder;
     }
 
+    /**
+     * Class for building configurations
+     */
     public static class Builder {
 
         private OkHttpClient client = null;
@@ -81,16 +96,32 @@ public class Configurations {
 
         private Builder() {}
 
+        /**
+         * Setter for a networking client
+         * @param client for networking requests
+         * @return Builder
+         */
         public Builder okHttpClient(@NonNull OkHttpClient client) {
             this.client = client;
             return this;
         }
 
+        /**
+         * Setter for the cache used to store images in disk
+         * @param cache cache
+         * @return Builder
+         */
         public Builder cache(@NonNull Cache cache) {
             this.cache = cache;
             return this;
         }
 
+        /**
+         * Build a new instance of Configurations. This should be supplied to Pomu or the Pipeline
+         * if already initialized
+         *
+         * @return Builder
+         */
         public @NonNull Configurations build() {
             return new Configurations(client,
                     cache);

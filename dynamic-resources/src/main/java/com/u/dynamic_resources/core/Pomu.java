@@ -59,6 +59,10 @@ public final class Pomu {
      * @param configs custom to set to Pomu
      */
     public static void initialize(@NonNull Context context, @NonNull Configurations configs) {
+        if (dpi != null) {
+            throw new IllegalStateException("Pomu already initialized.");
+        }
+
         dpi = ScreenDensity.get(context.getResources());
         Pipeline.getInstance().setConfigurations(configs);
     }
