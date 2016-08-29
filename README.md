@@ -6,6 +6,8 @@ This api targets problems around APK sizes, and the problem of having a lot of l
 
 What it does is, when your application is in need of a resource, it will at that moment download it and take care of it for you, without having to deal with more problems than solutions.
 
+### Minimum Api Level: 11
+
 ### Usage:
 
 Initialize Pomu in your Application's onCreate().
