@@ -10,6 +10,9 @@ import com.u.dynamic_resources.internal.DiskCache;
 import okhttp3.OkHttpClient;
 
 /**
+ * Configurations you can supply to the library to have your own custom classes instead of
+ * the defaults
+ *
  * Created by saguilera on 8/24/16.
  */
 public class Configurations {
@@ -17,13 +20,32 @@ public class Configurations {
     private @Nullable OkHttpClient client;
     private @Nullable Cache cache;
 
-    static Configurations getDefault(Context context) {
+    /**
+     * Package method to create a default configuration
+     * @param context with access to the resources
+     * @return Builder
+     */
+    static Builder getDefault(Context context) {
         return new Builder()
                 .okHttpClient(new OkHttpClient.Builder().build())
-                .cache(new DiskCache(context))
-                .build();
+                .cache(new DiskCache(context));
     }
 
+    /**
+     * Method developers should use to create new Configurations.
+     *
+     * @param context with access to the resources
+     * @return Builder
+     */
+    public static Builder create(Context context) {
+        return getDefault(context);
+    }
+
+    /**
+     * Private constructor
+     * @param client okHttpClient
+     * @param cache cache
+     */
     private Configurations(@Nullable OkHttpClient client,
                            @Nullable Cache cache) {
         this.client = client;
@@ -57,7 +79,7 @@ public class Configurations {
         private OkHttpClient client = null;
         private Cache cache = null;
 
-        public Builder() {}
+        private Builder() {}
 
         public Builder okHttpClient(@NonNull OkHttpClient client) {
             this.client = client;

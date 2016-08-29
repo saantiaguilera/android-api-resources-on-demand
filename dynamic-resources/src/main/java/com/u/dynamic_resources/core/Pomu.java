@@ -25,27 +25,63 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Core class of the library. From here requests are created and dispatched by the developer.
+ *
+ * This is the access point of the developer to the lib.
+ *
  * Created by saguilera on 8/24/16.
  */
 public final class Pomu {
 
     private static ScreenDensity dpi = null;
 
+    /**
+     * Initialize Pomu with the default configurations.
+     * Be sure to always call the initialize() method on the Application's onCreate()
+     * so you are certain that every Pomu call across the application will be cohesive.
+     *
+     * @param context of the application
+     */
     public static void initialize(@NonNull Context context) {
-        initialize(context, Configurations.getDefault(context));
+        initialize(context, Configurations.getDefault(context).build());
     }
 
+    /**
+     * Initialize Pomu with custom configurations.
+     * Be sure to always call the initialize() method on the Application's onCreate()
+     * so you are certain that every Pomu call across the application will be cohesive.
+     *
+     * You can change your configurations at any time by yourself by setting them to the Pipeline
+     * with Pipeline.getInstance().setConfigurations(configs). This is not recommended tho since
+     * it will leave a part of your app with old configurations and another one with newer.
+     *
+     * @param context of the application
+     * @param configs custom to set to Pomu
+     */
     public static void initialize(@NonNull Context context, @NonNull Configurations configs) {
         dpi = ScreenDensity.get(context.getResources());
         Pipeline.getInstance().setConfigurations(configs);
     }
 
+    /**
+     * Create a new Pomu.Builder. This is used every time you want to create a new request
+     * to either just download an image or even show it in a View.
+     *
+     * Be sure to have initialized Pomu before calling this.
+     * Supply any kind of ContextWrapper that has permissions to the resources
+     *
+     * @param context
+     * @return
+     */
     public static @NonNull Builder create(@NonNull Context context) {
         if (dpi == null) throw new NullPointerException("No screen dpi available. Maybe you forgot to initialize Pomu??");
 
         return new Builder(context);
     }
 
+    /**
+     * Builder class to create new Pomu requests
+     */
     public static class Builder {
 
         private @NonNull WeakReference<Context> context;
@@ -54,12 +90,21 @@ public final class Pomu {
         private @Nullable WeakReference<BitmapCallback> callback;
         private @Nullable FrescoImageController.Builder controller;
 
+        /**
+         * Package visible constructor. Create Builders with Pomu.create(context).
+         *
+         * @param context with access to the resources
+         */
         Builder(@NonNull Context context) {
             this.context = new WeakReference<>(context);
             this.uris = null;
         }
 
-        private List<Uri> getUris() {
+        /**
+         * Get all the uris to download
+         * @return uris to download
+         */
+        private @NonNull List<Uri> getUris() {
             if (uris == null) {
                 return (uris = new ArrayList<>());
             }
@@ -67,11 +112,25 @@ public final class Pomu {
             return uris;
         }
 
+        /**
+         * Add a url to download. This creates a list of urls to downlaod, meaning you can call in a
+         * single request 4 times this and it will download 4 images.
+         *
+         * @param url to add to the download queue
+         * @return Builder
+         */
         public Builder url(@NonNull String url) {
             getUris().add(Uri.parse(url));
             return this;
         }
 
+        /**
+         * Add a url to download. This creates a list of urls to downlaod, meaning you can call in a
+         * single request 4 times this and it will download 4 images.
+         *
+         * @param uri to add to the download queue
+         * @return Builder
+         */
         public Builder url(@NonNull Uri uri) {
             getUris().add(uri);
             return this;
@@ -112,16 +171,35 @@ public final class Pomu {
             return this;
         }
 
+        /**
+         * Callback to listen to the status of the request. If multiple uris are used, this callback
+         * will be called for each uri status.
+         *
+         * @param callback to get notified of the request event
+         * @return Builder
+         */
         public Builder callback(@NonNull BitmapCallback callback) {
             this.callback = new WeakReference<>(callback);
             return this;
         }
 
+        /**
+         * If using Fresco, you can supply a controller to customize the Image request prior to the decode
+         *
+         * @param controller to customize fresco download
+         * @return Builder
+         */
         public Builder controller(@NonNull FrescoImageController.Builder controller) {
             this.controller = controller;
             return this;
         }
 
+        /**
+         * Create a file callback to add the File received to an ImageView
+         *
+         * @param view where the image will be shown
+         * @return FileCallback
+         */
         private FileCallback createRequestCallback(@NonNull final ImageView view) {
             return new FileCallback() {
                 @Override
@@ -174,6 +252,13 @@ public final class Pomu {
             };
         }
 
+        /**
+         * Download the selected uris and store them in the cache. This method wont show any of them.
+         *
+         * Its useful if you need some images to be downloaded at the start of the application or at previous
+         * steps where you still dont have the view, but as soon as you will have it you want the user
+         * to see the image instantly (without waiting for it to download)
+         */
         @SuppressWarnings("ConstantConditions")
         public void get() {
             Validator.checkNullAndThrow(this, uris);
@@ -193,6 +278,19 @@ public final class Pomu {
             }
         }
 
+        /**
+         * Download a single uri and show the image in an ImageView.
+         *
+         * Please beware this should be call with only a single uri. Having multiple uris will throw a
+         * {@link IllegalStateException} because we cant show more than one image in a single view (duh)
+         *
+         * This method will download the image, cache it so we dont have to do it again and instantly
+         * show it in a imageView.
+         *
+         * If you are using Fresco, this method will take advantage of it.
+         *
+         * @param view where the image will be shown
+         */
         @SuppressWarnings("ConstantConditions")
         public void into(@NonNull final ImageView view) {
             Validator.checkNullAndThrow(this, uris);
