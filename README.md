@@ -22,6 +22,9 @@ Also, if your application targets API levels lower than 19, where Dalvik is the 
    //Optional
    //If you plan on using custom configurations (like custom cache / network client)
    Pipeline.getInstance().setConfigurations(configurations); //Or wherever you want, but to have a cohesive configuration across all resources its better here :)
+	//Or on initialization by doing
+	Pomu.initialize(this, configs);
+	//Careful Pomu should only be initialized once.
 ```
 
 For loading a resource just:
@@ -78,7 +81,19 @@ You can give to Pomu a UrlDensityFormatter and have it do this for you instead o
        ....
        .url("http://mylovelyhost.com/image-of-id-234234-in-density-%s", formatter)
        ....
-```       
+```
+
+If you want to just download a image (or images) without displaying it. For example because your app at start should have always some resources, or because you want them prior to showing them to avoid user seeing the loading. You can do:
+
+```Java
+	Pomu.create(context)
+		.url(oneUrlToDownload)
+		.url(another)
+		.url(oneMore)
+		.url(allTheOnesYouWant)
+		...
+		.get(); //Instead of into(imageView)
+```
 
 ### Features:
 
