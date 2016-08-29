@@ -65,12 +65,8 @@ final class Streamer {
                      @Nullable FileCallback callback,
                      @Nullable Cache cache,
                      @NonNull Uri uri) {
-        if (client != null) {
-            this.client = client;
-        } else {
-            this.client = new OkHttpClient.Builder().build();
-        }
-
+        Validator.checkNullAndThrow(this, client, cache, uri);
+        this.client = client;
         this.cache = cache;
         this.callback = callback;
         this.uri = uri;
@@ -129,7 +125,14 @@ final class Streamer {
      */
     private void onResponse(@NonNull Response response) {
         try {
-            File file = cache.put(uri, response.body().byteStream());
+            File file;
+
+            if (cache.contains(uri)) {
+                file = cache.get(uri);
+            } else {
+                file = cache.put(uri, response.body().byteStream());
+            }
+
             new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new SuccessRunnable(file));
         } catch (Exception e) {
             new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new FailureRunnable(e));

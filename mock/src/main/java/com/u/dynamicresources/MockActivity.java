@@ -13,10 +13,12 @@ import com.u.dynamic_resources.screen.ScreenDensity;
 import com.u.dynamic_resources.screen.UrlDensityFormatter;
 
 /**
+ * Activity class for testing
  * Created by saguilera on 8/24/16.
  */
 public class MockActivity extends Activity {
 
+    //Three images for testing purposes
     private static final String EXAMPLE_IMAGE_1 = "http://www.estufas1.com.mx/images/e_ge/estufa_piso_ge_EG3094DBI.jpg";
     private static final String EXAMPLE_IMAGE_2 = "http://i.stack.imgur.com/Pryyn.png";
     private static final String EXAMPLE_IMAGE_3 = "https://d319i1jp2i9xq6.cloudfront.net/upload/images/31383/31383_p.jpg";
@@ -35,7 +37,7 @@ public class MockActivity extends Activity {
 
         Log.w(this.getClass().getSimpleName(), "screen density : " + ScreenDensity.get(this.getResources()).toString());
 
-
+        //Anonymous class for callbacks
         bitmapCallback = new BitmapCallback() {
             @Override
             public void onSuccess() {
@@ -50,6 +52,7 @@ public class MockActivity extends Activity {
             }
         };
 
+        //Anonymous class for url formatting in the dynamic urls
         urlFormatter = new UrlDensityFormatter() {
             @Override
             public String from(@NonNull ScreenDensity density) {
