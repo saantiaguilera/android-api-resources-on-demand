@@ -21,6 +21,8 @@ import com.u.dynamic_resources.screen.UrlDensityFormatter;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by saguilera on 8/24/16.
@@ -48,21 +50,30 @@ public final class Pomu {
 
         private @NonNull WeakReference<Context> context;
 
-        private @NonNull Uri uri;
+        private @Nullable List<Uri> uris;
         private @Nullable WeakReference<BitmapCallback> callback;
         private @Nullable FrescoImageController.Builder controller;
 
         Builder(@NonNull Context context) {
             this.context = new WeakReference<>(context);
+            this.uris = null;
+        }
+
+        private List<Uri> getUris() {
+            if (uris == null) {
+                return (uris = new ArrayList<>());
+            }
+
+            return uris;
         }
 
         public Builder url(@NonNull String url) {
-            uri = Uri.parse(url);
+            getUris().add(Uri.parse(url));
             return this;
         }
 
         public Builder url(@NonNull Uri uri) {
-            this.uri = uri;
+            getUris().add(uri);
             return this;
         }
 
@@ -97,7 +108,7 @@ public final class Pomu {
          * @return
          */
         public Builder url(@NonNull String url, @NonNull UrlDensityFormatter formatter) {
-            this.uri = Uri.parse(String.format(url, formatter.from(dpi)));
+            getUris().add(Uri.parse(String.format(url, formatter.from(dpi))));
             return this;
         }
 
@@ -111,72 +122,94 @@ public final class Pomu {
             return this;
         }
 
-        public void get() {
-            Validator.checkNullAndThrow(this, uri);
+        private FileCallback createRequestCallback(@NonNull final ImageView view) {
+            return new FileCallback() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    if (callback != null) {
+                        callback.get().onFailure(e);
+                    }
+                }
 
-            Request request = new Request.Builder()
-                    .uri(uri)
-                    .build();
+                @Override
+                public void onSuccess(@NonNull File file) {
+                    if (view instanceof DraweeView) {
+                        //If fresco is available, take advantage of it
+                        FrescoImageController.Builder builder = controller;
 
-            Pipeline.getInstance().fetch(request);
+                        if (builder == null) {
+                            builder = FrescoImageController.create(context.get());
+                        }
+
+                        builder.load(file.toURI().toString()) //Its the same to do this or use the schema: "file://" + file.getPath()
+                                .noDiskCache() // Because doh
+                                .listener(new FrescoImageController.Callback() {
+                                    //This is why I hate not using eventbus and getting callback hells :)
+                                    @Override
+                                    public void onSuccess() {
+                                        if (callback != null) {
+                                            callback.get().onSuccess();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(@NonNull Throwable t) {
+                                        if (callback != null) {
+                                            callback.get().onFailure(t);
+                                        }
+                                    }
+                                }).into((DraweeView) view);
+                    } else {
+                        //If its not, decode normally and set it (in Dalvik systems be careful with this)
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+                        view.setImageBitmap(BitmapFactory.decodeFile(file.getPath(), options));
+
+                        if (callback != null) {
+                            callback.get().onSuccess();
+                        }
+                    }
+                }
+            };
         }
 
+        @SuppressWarnings("ConstantConditions")
+        public void get() {
+            Validator.checkNullAndThrow(this, uris);
+
+            if (!uris.isEmpty()) {
+                for (Uri uri : uris) {
+                    Validator.checkNullAndThrow(this, uri);
+
+                    Request request = new Request.Builder()
+                            .uri(uri)
+                            .build();
+
+                    Pipeline.getInstance().fetch(request);
+                }
+            } else {
+                throw new IllegalStateException("No uris provided for Pomu get(). Forgot to call url()??");
+            }
+        }
+
+        @SuppressWarnings("ConstantConditions")
         public void into(@NonNull final ImageView view) {
-            Validator.checkNullAndThrow(this, uri);
+            Validator.checkNullAndThrow(this, uris);
 
-            Request request = new Request.Builder()
-                    .uri(uri)
-                    .callback(new FileCallback() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            if (callback != null) {
-                                callback.get().onFailure(e);
-                            }
-                        }
+            if (uris.size() == 1) {
+                Uri uri = uris.get(0);
+                Validator.checkNullAndThrow(this, uri);
 
-                        @Override
-                        public void onSuccess(@NonNull File file) {
-                            if (view instanceof DraweeView) {
-                                //If fresco is available, take advantage of it
-                                FrescoImageController.Builder builder = controller;
+                Request request = new Request.Builder()
+                        .uri(uri)
+                        .callback(createRequestCallback(view))
+                        .build();
 
-                                if (builder == null) {
-                                    builder = FrescoImageController.create(context.get());
-                                }
-
-                                builder.load(file.toURI().toString()) //Its the same to do this or use the schema: "file://" + file.getPath()
-                                        .noDiskCache() // Because doh
-                                        .listener(new FrescoImageController.Callback() {
-                                            //This is why I hate not using eventbus and getting callback hells :)
-                                            @Override
-                                            public void onSuccess() {
-                                                if (callback != null) {
-                                                    callback.get().onSuccess();
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onFailure(@NonNull Throwable t) {
-                                                if (callback != null) {
-                                                    callback.get().onFailure(t);
-                                                }
-                                            }
-                                        }).into((DraweeView) view);
-                            } else {
-                                //If its not, decode normally and set it (in Dalvik systems be careful with this)
-                                BitmapFactory.Options options = new BitmapFactory.Options();
-                                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
-                                view.setImageBitmap(BitmapFactory.decodeFile(file.getPath(), options));
-
-                                if (callback != null) {
-                                    callback.get().onSuccess();
-                                }
-                            }
-                        }
-                    }).build();
-
-            Pipeline.getInstance().fetch(request);
+                Pipeline.getInstance().fetch(request);
+            } else {
+                throw new IllegalStateException("Size of uris to put in ImageView is " + uris.size() + ". Please be sure to provide only 1 uri, we cant show multiple images in a single view (Neither zero)");
+            }
         }
     }
 
