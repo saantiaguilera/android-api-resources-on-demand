@@ -2,9 +2,9 @@
 
 ## Loading resources on demand
 
-This api targets problems around APK sizes, and the problem of having a lot of local resources which occupy space, but probably are used only at really few places.
+This api targets problems around APK sizes, specifically having a lot of local resources in every density, which occupy space, but probably are used only at once place.
 
-What it does is, when your application is in need of a resource, it will at that moment download it and take care of it for you, without having to deal with more problems than solutions.
+This will let you download resources on demand, without having to deal with more problems than solutions.
 
 ### Minimum Api Level: 11
 
