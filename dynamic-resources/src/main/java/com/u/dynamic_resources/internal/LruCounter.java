@@ -48,8 +48,8 @@ class LruCounter {
 
     /**
      * Constructor for the disk cache with a max size for storing images
-     * @param cache
-     * @param maxDiskSize
+     * @param cache DiskCache instance
+     * @param maxDiskSize max disk size to use for persisting data
      */
     public LruCounter(DiskCache cache, long maxDiskSize) {
         this.context = new WeakReference<>(cache.getContext());
