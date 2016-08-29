@@ -26,14 +26,14 @@ public class DiskCache implements Cache {
     //Buffer size for writing files
     private static final int BUFFER_SIZE = 1024;
 
-    private WeakReference<Context> context;
-    private LruCounter lruCounter;
+    private @NonNull WeakReference<Context> context;
+    private @NonNull LruCounter lruCounter;
 
     /**
      * Default constructor with DEFAULT_DISK_CACHE as max disk size.
      * @param context with resource access
      */
-    public DiskCache(Context context) {
+    public DiskCache(@NonNull Context context) {
         this(context, DEFAULT_DISK_SIZE);
     }
 
@@ -42,7 +42,7 @@ public class DiskCache implements Cache {
      * @param context with resource access
      * @param maxDiskSize the cache will use to store images, or either clean up.
      */
-    public DiskCache(Context context, long maxDiskSize) {
+    public DiskCache(@NonNull Context context, long maxDiskSize) {
         this.context = new WeakReference<>(context);
         this.lruCounter = new LruCounter(this, maxDiskSize);
     }
@@ -51,7 +51,7 @@ public class DiskCache implements Cache {
      * Package access Context getter
      * @return Context with resource access
      */
-    Context getContext() {
+    @NonNull Context getContext() {
         return context.get();
     }
 
@@ -65,7 +65,7 @@ public class DiskCache implements Cache {
      * @throws Exception if something wrong happened
      */
     @WorkerThread
-    private boolean write(File output, InputStream data) throws Exception {
+    private boolean write(@NonNull File output, @NonNull InputStream data) throws Exception {
         FileOutputStream fos = null;
 
         try {
@@ -172,7 +172,7 @@ public class DiskCache implements Cache {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @WorkerThread
-    private void deleteAllIn(File file) {
+    private void deleteAllIn(@NonNull File file) {
         if (file.isDirectory())
             for (File child : file.listFiles())
                 deleteAllIn(child);
