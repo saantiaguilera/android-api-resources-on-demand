@@ -111,6 +111,16 @@ public final class Pomu {
             return this;
         }
 
+        public void get() {
+            Validator.checkNullAndThrow(this, uri);
+
+            Request request = new Request.Builder()
+                    .uri(uri)
+                    .build();
+
+            Pipeline.getInstance().fetch(request);
+        }
+
         public void into(@NonNull final ImageView view) {
             Validator.checkNullAndThrow(this, uri);
 
