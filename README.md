@@ -18,8 +18,8 @@ Also, if your application targets API levels lower than 19, where Dalvik is the 
    //In your applications onCreate()
    Pomu.initialize(this);
 
-	//If you use fresco.
-	Fresco.initialize(this);
+   //If you use fresco.
+   Fresco.initialize(this);
 
    //Optional
    //If you plan on using custom configurations (like custom cache / network client)
