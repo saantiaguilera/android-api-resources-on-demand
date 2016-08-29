@@ -21,7 +21,7 @@ final class Files {
 
     private static final String DEFAULT_EXTENSION = ".jpg";
 
-    private static String hash(String name) {
+    private static @NonNull String hash(@NonNull String name) {
         try {
             MessageDigest m = MessageDigest.getInstance(HASH);
             m.update(name.getBytes());
@@ -33,7 +33,7 @@ final class Files {
         }
     }
 
-    private static String stripExtension(String path) {
+    private static @NonNull String stripExtension(@NonNull String path) {
         try {
             return path.substring(path.lastIndexOf("."));
         } catch (IndexOutOfBoundsException e) {
@@ -41,7 +41,7 @@ final class Files {
         }
     }
 
-    static File createDir(Context context) {
+    static @NonNull File createDir(@NonNull Context context) {
         File dir = new File(context.getFilesDir(), DEFAULT_DIR);
         if (!dir.isDirectory()) {
             if (!dir.mkdirs()) {
