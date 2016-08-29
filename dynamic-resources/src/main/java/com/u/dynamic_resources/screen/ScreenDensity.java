@@ -27,7 +27,7 @@ public enum ScreenDensity {
     private final static int DENSITY_XH = DisplayMetrics.DENSITY_XHIGH;
     private final static int DENSITY_XXH = 480; //Very unlikely they will change
     private final static int DENSITY_XXXH = 640; //They require api 16 min...
-    private final static int DENSITY_TV = DisplayMetrics.DENSITY_TV;
+    private final static int DENSITY_TV = 213; //This requires api 13 min...
 
     private int density;
 
