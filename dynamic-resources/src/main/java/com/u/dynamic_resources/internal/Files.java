@@ -73,7 +73,7 @@ final class Files {
 
     /**
      * Create a file for the given uri. Please be careful the name will be hashed, so use it carefully.
-     * 
+     *
      * @param context with resource access
      * @param uri for the given file
      * @return File for the given uri
