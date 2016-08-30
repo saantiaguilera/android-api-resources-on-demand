@@ -63,7 +63,7 @@ public class Pipeline {
         this.cache = configurations.getCache();
     }
 
-    private Executor getSingleThreadPoolExecutor() {
+    private @NonNull Executor getSingleThreadPoolExecutor() {
         if (executor == null) {
             synchronized (this) {
                 if (executor == null) {
