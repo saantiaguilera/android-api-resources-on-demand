@@ -13,7 +13,7 @@ This will let you download resources on demand, without having to deal with more
 In your module gradle file add
 
 ```Java
-	compile 'com.saantiaguilera:Pomu:1.0.0'
+	compile 'com.saantiaguilera:Pomu:1.0.1'
 ```
 
 If its not found (because I have to wait for bintray to add it to jcenter) apply in the module gradle file:
