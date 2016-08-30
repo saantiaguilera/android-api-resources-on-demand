@@ -8,6 +8,26 @@ This will let you download resources on demand, without having to deal with more
 
 ### Minimum Api Level: 11
 
+### Download
+
+In your module gradle file add
+
+```Java
+	compile 'com.saantiaguilera:Pomu:1.0.0'
+```
+
+If its not found (because I have to wait for bintray to add it to jcenter) apply in the module gradle file:
+
+```Java
+repositories {
+	mavenCentral()
+	maven {
+		//Since bintray hasnt already publish it
+		url  "http://dl.bintray.com/saantiaguilera/maven"
+	}
+}
+```
+
 ### Usage:
 
 Initialize Pomu in your Application's onCreate().

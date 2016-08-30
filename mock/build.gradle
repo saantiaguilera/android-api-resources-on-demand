@@ -19,7 +19,15 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+    maven {
+        //Since bintray hasnt already publish it
+        url  "http://dl.bintray.com/saantiaguilera/maven"
+    }
+}
+
 dependencies {
     compile 'com.android.support:appcompat-v7:24.1.0'
-    compile project(path: ':Pomu')
+    compile 'com.saantiaguilera:Pomu:1.0.0'
 }
