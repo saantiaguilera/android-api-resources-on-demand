@@ -1,1 +1,1 @@
-include ':mock', ':dynamic-resources'
+include ':mock', ':Pomu'
