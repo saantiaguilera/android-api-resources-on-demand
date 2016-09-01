@@ -27,7 +27,7 @@ public class Configurations {
      */
     static Builder getDefault(Context context) {
         return new Builder()
-                .okHttpClient(new OkHttpClient.Builder().build())
+                .okHttpClient(new OkHttpClient.Builder().cache(null).build())
                 .cache(new DiskCache(context));
     }
 
