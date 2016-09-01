@@ -3,6 +3,7 @@ package com.saantiaguilera.dynamic_resources.internal;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
 import java.io.File;
@@ -40,6 +41,9 @@ class LruCounter {
     private long size;
     private long maxSize;
 
+    private Boolean initialized = false;
+    private static final int MAX_TIME_IDLE = 2000;
+
     /**
      * Cache utils
      */
@@ -60,16 +64,24 @@ class LruCounter {
         size = 0;
         files = new ArrayList<>();
 
-        //Read all the available files and track them
-        File dir = Files.createDir(getContext());
-        if (dir.exists()) {
-            for (File child : dir.listFiles()) {
-                files.add(new Container(sharedPreferences.getLong(child.getPath(), 0), child.getPath(), child.length()));
-                size += child.length();
-            }
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                //Read all the available files and track them
+                File dir = Files.createDir(getContext());
+                if (dir.exists()) {
+                    for (File child : dir.listFiles()) {
+                        files.add(new Container(sharedPreferences.getLong(child.getPath(), 0), child.getPath(), child.length()));
+                        size += child.length();
+                    }
+                }
 
-            Collections.sort(files, new ReverseComparator());
-        }
+                Collections.sort(files, new ReverseComparator());
+
+                initialized = true;
+                initialized.notifyAll();
+            }
+        });
     }
 
     /**
@@ -81,26 +93,63 @@ class LruCounter {
     }
 
     /**
+     * This method might be complex.
+     * In ALL cases, this will just return true. Because we initialize Pomu, and the cache will load
+     * and by the time the first Pomu image gets loaded, this has already been initialized long time ago.
+     *
+     * If we want in the application to download images, this images will be downloaded the first time the app
+     * is run. So this cache will also be initialized asap, without having to wait. (+ the image takes some time
+     * to get downloaded remember)
+     *
+     * But what if we already have our cache filled, and we upload an update with MORE images to download in
+     * the application, and the user updates his app. The cache will surely take some time (~600ms) to load
+     * and the new images need to be downloaded.
+     *
+     * If we just returned false, we wouldnt be tracking in that first time those images (not a big deal), but
+     * still thats considered a bug. So we make the main thread idle (its in the application first time, so its part of the cold
+     * start) for 2 sec max until it gets loaded. If it does, it was just a first time cold start, else it will return
+     * false and we wont be tracking in that first time the downloaded images.
+     *
+     * Remember also that the new images have to be downloaded from the net, so its highly unprobable to happen.
+     * But better safe than worry.
+     *
+     * @return if its initialized or not
+     */
+    private boolean isInitialized() {
+        if (!initialized) {
+            try {
+                initialized.wait(MAX_TIME_IDLE);
+            } catch (InterruptedException e) {
+                //Make it return the initialized state.
+            }
+        }
+
+        return initialized;
+    }
+
+    /**
      * Evict a key from the cache
      */
     public void evict() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        boolean changed = false;
+        if (isInitialized()) {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            boolean changed = false;
 
-        while (size > maxSize && !files.isEmpty()) {
-            Container container = files.get(0);
+            while (size > maxSize && !files.isEmpty()) {
+                Container container = files.get(0);
 
-            size -= container.getSize();
+                size -= container.getSize();
 
-            cache.remove(Uri.parse(container.getPath()));
-            files.remove(0);
-            editor.remove(container.getPath());
+                cache.remove(Uri.parse(container.getPath()));
+                files.remove(0);
+                editor.remove(container.getPath());
 
-            changed = true;
-        }
+                changed = true;
+            }
 
-        if (changed) {
-            editor.apply();
+            if (changed) {
+                editor.apply();
+            }
         }
     }
 
@@ -109,25 +158,29 @@ class LruCounter {
      * @param file to track
      */
     public void add(File file) {
-        sharedPreferences.edit()
-                .putLong(file.getPath(), System.currentTimeMillis())
-                .apply();
+        if (isInitialized()) {
+            sharedPreferences.edit()
+                    .putLong(file.getPath(), System.currentTimeMillis())
+                    .apply();
 
-        Container existing = null;
-        for (Container container : files) {
-            if (container.getPath().contentEquals(file.getPath())) {
-                existing = container;
-                break;
+            Container existing = null;
+            for (Container container : files) {
+                if (container.getPath().contentEquals(file.getPath())) {
+                    existing = container;
+                    break;
+                }
             }
-        }
 
-        if (existing != null) {
-            files.remove(existing);
-        } else {
-            size += file.length();
-        }
+            if (existing != null) {
+                files.remove(existing);
+            } else {
+                size += file.length();
+            }
 
-        files.add(new Container(System.currentTimeMillis(), file.getPath(), file.length()));
+            files.add(new Container(System.currentTimeMillis(), file.getPath(), file.length()));
+
+            Collections.sort(files, new ReverseComparator());
+        }
     }
 
     /**
