@@ -13,7 +13,7 @@ This will let you download resources on demand, without having to deal with more
 In your module gradle file add
 
 ```Java
-	compile 'com.saantiaguilera:Pomu:1.0.1'
+	compile 'com.saantiaguilera:Pomu:1.0.3'
 ```
 
 If its not found (because I have to wait for bintray to add it to jcenter) apply in the module gradle file:
@@ -122,4 +122,9 @@ If you want to just download a image (or images) without displaying it. For exam
 - [x] Persistable resources once downloaded, to avoid high network traffic and bad ux for the user.
 - [x] Fresco and native ImageView support (for memory issues in Dalvik systems Fresco was selected over Picasso)
 - [x] Screen density images format support
+- [x] Secure storage of resources (in app dir / mangle names)
 - [x] Custom cache. By default it's a LRU cache up to 15 mb (maxDiskSize can also be tweaked if you still want to have LRU)
+- [x] Getting resources on demand
+- [x] Getting resources at any particular moment and caching them
+- [x] Cache control (eviction can be done by user)
+- [x] Status callbacks
