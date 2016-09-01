@@ -47,6 +47,12 @@ final class Streamer {
 
     private @NonNull Cache cache;
 
+    /**
+     * To avoid duplicate requests at the same time in case theres a race condition.
+     * Eg: We dont have image1 so we have to download it
+     * User uses pomu to show image1 twice (in 2 image views at the same time)
+     * Image might be downloaded twice !! (this of course can happen with n downloads atm)
+     */
     private @Nullable static List<Call> currentCalls = null;
 
     //For writing files
@@ -309,7 +315,7 @@ final class Streamer {
 
         public Call(@Nullable okhttp3.Call call, @Nullable FileCallback callback) {
             this.call = call;
-            this.callbacks = new CopyOnWriteArrayList<>();
+            this.callbacks = new ArrayList<>();
 
             if (callback != null) {
                 this.callbacks.add(callback);

@@ -47,7 +47,7 @@ public class MockActivity extends Activity {
 
             @Override
             public void onFailure(@NonNull Throwable throwable) {
-                Log.w("Sansa", "onFailure");
+                Log.w("Sansa", "onFailure " + throwable.getMessage());
                 throwable.printStackTrace();
             }
         };
