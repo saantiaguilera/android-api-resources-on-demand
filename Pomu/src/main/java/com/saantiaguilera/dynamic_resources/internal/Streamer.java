@@ -105,9 +105,11 @@ final class Streamer {
      */
     @SuppressWarnings("SuspiciousMethodCalls")
     private void fetch() {
-        if (cache.contains(uri) && callback != null) {
-            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(
-                    new SuccessRunnable(new Call(null, callback), cache.get(uri)));
+        if (cache.contains(uri)) {
+            if (callback != null) {
+                new Handler(Looper.getMainLooper()).postAtFrontOfQueue(
+                        new SuccessRunnable(new Call(null, callback), cache.get(uri)));
+            }
             return;
         }
 

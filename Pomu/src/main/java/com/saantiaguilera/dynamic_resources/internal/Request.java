@@ -96,7 +96,8 @@ public class Request {
         public Request build() {
             Validator.checkNullAndThrow(this, uri);
 
-            return new Request(callback.get(), uri);
+            return new Request(callback == null ? null : callback.get(),
+                    uri);
         }
 
     }

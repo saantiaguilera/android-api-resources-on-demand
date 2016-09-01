@@ -41,7 +41,11 @@ class LruCounter {
     private long size;
     private long maxSize;
 
-    private Boolean initialized = false;
+    /**
+     * Variables for the initialization logic
+     */
+    private final Object lock = new Object();
+    private boolean initialized = false;
     private static final int MAX_TIME_IDLE = 2000;
 
     /**
@@ -67,19 +71,21 @@ class LruCounter {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                //Read all the available files and track them
-                File dir = Files.createDir(getContext());
-                if (dir.exists()) {
-                    for (File child : dir.listFiles()) {
-                        files.add(new Container(sharedPreferences.getLong(child.getPath(), 0), child.getPath(), child.length()));
-                        size += child.length();
+                synchronized (lock) {
+                    //Read all the available files and track them
+                    File dir = Files.createDir(getContext());
+                    if (dir.exists()) {
+                        for (File child : dir.listFiles()) {
+                            files.add(new Container(sharedPreferences.getLong(child.getPath(), 0), child.getPath(), child.length()));
+                            size += child.length();
+                        }
                     }
+
+                    Collections.sort(files, new ReverseComparator());
+
+                    initialized = true;
+                    lock.notifyAll();
                 }
-
-                Collections.sort(files, new ReverseComparator());
-
-                initialized = true;
-                initialized.notifyAll();
             }
         });
     }
@@ -118,7 +124,9 @@ class LruCounter {
     private boolean isInitialized() {
         if (!initialized) {
             try {
-                initialized.wait(MAX_TIME_IDLE);
+                synchronized (lock) {
+                    lock.wait(MAX_TIME_IDLE);
+                }
             } catch (InterruptedException e) {
                 //Make it return the initialized state.
             }
