@@ -94,18 +94,16 @@ public class MockActivity extends Activity {
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_3));
 
+        //Dynamic image with imageview
+        Pomu.create(this)
+                .url(EXAMPLE_IMAGE_4_FORMATTED, urlFormatter)
+                .callback(bitmapCallback)
+                .into((ImageView) findViewById(R.id.activity_mock_image_5));
 
         //Static image with imageview
         Pomu.create(this)
                 .url(EXAMPLE_IMAGE_3)
                 .callback(bitmapCallback)
                 .into((ImageView) findViewById(R.id.activity_mock_image_4));
-
-
-        //Dynamic image with imageview
-        Pomu.create(this)
-                .url(EXAMPLE_IMAGE_4_FORMATTED, urlFormatter)
-                .callback(bitmapCallback)
-                .into((ImageView) findViewById(R.id.activity_mock_image_5));
     }
 }

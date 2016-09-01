@@ -5,11 +5,17 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.SparseArray;
+import android.widget.ImageView;
 
 import com.saantiaguilera.dynamic_resources.internal.loading.FileCallback;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,6 +47,8 @@ final class Streamer {
 
     private @NonNull Cache cache;
 
+    private @Nullable static List<Call> currentCalls = null;
+
     //For writing files
     private static final ExecutorService executor = Executors.newFixedThreadPool(1);
 
@@ -50,6 +58,18 @@ final class Streamer {
      */
     public static Builder create() {
         return new Builder();
+    }
+
+    private static List<Call> getCurrentCalls() {
+        if (currentCalls == null) {
+            synchronized (Streamer.class) {
+                if (currentCalls == null) {
+                    currentCalls = new CopyOnWriteArrayList<>();
+                }
+            }
+        }
+
+        return currentCalls;
     }
 
     /**
@@ -77,9 +97,11 @@ final class Streamer {
      *
      * Runs on UI Thread or worker thread
      */
+    @SuppressWarnings("SuspiciousMethodCalls")
     private void fetch() {
         if (cache.contains(uri) && callback != null) {
-            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new SuccessRunnable(cache.get(uri)));
+            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(
+                    new SuccessRunnable(new Call(null, callback), cache.get(uri)));
             return;
         }
 
@@ -94,35 +116,46 @@ final class Streamer {
                 .cacheControl(cacheControl)
                 .get().build();
 
-        client.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                if (!call.isCanceled() && callback != null) {
-                    callback.onFailure(e);
-                }
-            }
+        okhttp3.Call call = client.newCall(request);
+        Call currentCall = get(call);
 
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                if (!call.isCanceled()) {
-                    executor.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (response != null) {
-                                Streamer.this.onResponse(response);
-                            }
-                        }
-                    });
-                }
+        if (currentCall != null) {
+            //If the request is already executing for this uri, avoid doing it more than once at the same time
+            if (callback != null) {
+                currentCall.add(callback);
             }
-        });
+        } else {
+            getCurrentCalls().add(new Call(call, callback));
+            call.enqueue(new okhttp3.Callback() {
+                @Override
+                public void onFailure(okhttp3.Call call, IOException e) {
+                    if (!call.isCanceled()) {
+                        new Handler(Looper.getMainLooper()).post(new FailureRunnable(get(call), e));
+                    }
+                }
+
+                @Override
+                public void onResponse(final okhttp3.Call call, final Response response) throws IOException {
+                    if (!call.isCanceled()) {
+                        executor.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (response != null) {
+                                    Streamer.this.onResponse(call, response);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
     }
 
     /**
      * Method for successfully downloading the image
      * @param response from network
      */
-    private void onResponse(@NonNull Response response) {
+    private void onResponse(@NonNull okhttp3.Call call, @NonNull Response response) {
         try {
             File file;
 
@@ -132,10 +165,20 @@ final class Streamer {
                 file = cache.put(uri, response.body().byteStream());
             }
 
-            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new SuccessRunnable(file));
+            new Handler(Looper.getMainLooper()).post(new SuccessRunnable(get(call), file));
         } catch (Exception e) {
-            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new FailureRunnable(e));
+            new Handler(Looper.getMainLooper()).post(new FailureRunnable(get(call), e));
         }
+    }
+
+    private @Nullable Call get(okhttp3.Call call) {
+        for (Call obj : getCurrentCalls()) {
+            if (obj.equals(call)) {
+                return obj;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -204,17 +247,28 @@ final class Streamer {
     /**
      * Inner class for a Failure networking event
      */
-    class FailureRunnable implements Runnable {
+    static class FailureRunnable implements Runnable {
         private @NonNull Exception exception;
+        private @Nullable Call call;
 
-        FailureRunnable(@NonNull Exception e) {
-            exception = e;
+        FailureRunnable(@Nullable Call call, @NonNull Exception e) {
+            this.exception = e;
+            this.call = call;
         }
 
         @Override
         public void run() {
-            if (callback != null) {
-                callback.onFailure(exception);
+            if (call != null) {
+                for (FileCallback callback : call.getCallbacks()) {
+                    if (callback != null) {
+                        callback.onFailure(exception);
+                    }
+                }
+
+                // To avoid possible mem leaks
+                call.getCallbacks().clear();
+                // Remove it to avoid staggering...
+                getCurrentCalls().remove(call);
             }
         }
     }
@@ -222,19 +276,74 @@ final class Streamer {
     /**
      * Inner class for a Success networking event
      */
-    class SuccessRunnable implements Runnable {
+    static class SuccessRunnable implements Runnable {
         private @Nullable File file;
+        private @Nullable Call call;
 
-        SuccessRunnable(@Nullable File file) {
+        SuccessRunnable(@Nullable Call call, @Nullable File file) {
             this.file = file;
+            this.call = call;
         }
 
         @Override
         public void run() {
-            if (callback != null && file != null) {
-                callback.onSuccess(file);
+            if (call != null && file != null) {
+                for (FileCallback callback : call.getCallbacks()) {
+                    if (callback != null) {
+                        callback.onSuccess(file);
+                    }
+                }
+
+                // To avoid possible mem leaks
+                call.getCallbacks().clear();
+                // Remove it to avoid staggering...
+                getCurrentCalls().remove(call);
             }
         }
+    }
+
+    static class Call {
+
+        private @Nullable okhttp3.Call call;
+        private @NonNull List<FileCallback> callbacks;
+
+        public Call(@Nullable okhttp3.Call call, @Nullable FileCallback callback) {
+            this.call = call;
+            this.callbacks = new CopyOnWriteArrayList<>();
+
+            if (callback != null) {
+                this.callbacks.add(callback);
+            }
+        }
+
+        public void add(@NonNull FileCallback callback) {
+            callbacks.add(callback);
+        }
+
+        @SuppressWarnings("all") //Complaints about simlify and a null check that its already checked..
+        @Override
+        public boolean equals(Object obj) {
+            if (call == null) {
+                return false;
+            }
+
+            if (obj instanceof Call) {
+                if (((Call) obj).call != null) {
+                    return call.request().url().equals(((Call) obj).call.request().url());
+                }
+            }
+
+            if (obj instanceof okhttp3.Call) {
+                return call.request().url().equals(((okhttp3.Call) obj).request().url());
+            }
+
+            return false;
+        }
+
+        public @NonNull List<FileCallback> getCallbacks() {
+            return callbacks;
+        }
+
     }
 
 }
