@@ -1,0 +1,31 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
+
+    defaultConfig {
+        minSdkVersion 11
+        targetSdkVersion 24
+        versionCode 1
+        versionName version
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+configurations {
+    javadocDeps
+}
+
+dependencies {
+    compile "com.facebook.fresco:fresco:$frescoVersion"
+    compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
+    compile "com.android.support:appcompat-v7:$supportVersion"
+}
+
+apply from: 'publish.gradle'
