@@ -1,5 +1,11 @@
 # Pomu
 
+## DEPRECATED
+
+This repository is no longer mantained. It has been moved and is currently mantained inside of [Mercadolibre](https://github.com/saantiaguilera/android-api-resources-on-demand)
+
+The current version shown here is really old and has some known bugs, I advise you to dont use it the way it is (if you need something alike, feel free to contact me for questions)
+
 ## Loading resources on demand
 
 This api targets problems around APK sizes, specifically having a lot of local resources in every density, which occupy space, but probably are used only at once place.
